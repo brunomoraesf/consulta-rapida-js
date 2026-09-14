@@ -1,0 +1,2626 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fundamentos de JavaScript</title>
+<style>
+  :root{
+    --bg:#0d1117; --bg2:#161b22; --bg3:#1c2128; --border:#30363d;
+    --text:#e6edf3; --dim:#8b949e;
+    --accent:#7c3aed; --accent2:#22d3ee;
+    --green:#3fb950; --yellow:#d29922; --red:#f85149; --pink:#d2a8ff;
+    --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,"Cascadia Code",Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(124,58,237,.18), transparent 60%),
+      radial-gradient(900px 500px at -10% 20%, rgba(34,211,238,.10), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    line-height:1.7; -webkit-font-smoothing:antialiased;
+  }
+  .topbar{
+    position:fixed;top:0;left:0;right:0;height:62px;z-index:60;
+    display:flex;align-items:center;gap:14px;padding:0 18px;
+    background:rgba(13,17,23,.82);backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--border);
+  }
+  .brand{display:flex;align-items:center;gap:12px;font-weight:700;letter-spacing:.2px}
+  .logo{
+    display:grid;place-items:center;width:36px;height:36px;border-radius:10px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    color:#0b0f14;font-weight:900;font-size:.85rem;
+    box-shadow:0 0 22px rgba(124,58,237,.5);
+  }
+  .brand span:last-child{font-size:.98rem}
+  .topbar-actions{margin-left:auto;display:flex;align-items:center;gap:10px}
+  #search{
+    background:var(--bg2);border:1px solid var(--border);color:var(--text);
+    padding:8px 14px;border-radius:10px;font-size:.85rem;width:230px;
+    outline:none;transition:.2s;font-family:inherit;
+  }
+  #search:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,58,237,.2)}
+  #search.flash{animation:searchFlash .8s ease}
+  @keyframes searchFlash{
+    0%,100%{box-shadow:0 0 0 0 rgba(124,58,237,0);border-color:var(--border)}
+    35%{box-shadow:0 0 0 5px rgba(124,58,237,.4);border-color:var(--accent)}
+  }
+  .menu-btn{
+    display:none;background:var(--bg2);border:1px solid var(--border);
+    color:var(--text);font-size:1.1rem;border-radius:10px;
+    width:38px;height:38px;cursor:pointer;
+  }
+  .sidebar{
+    position:fixed;top:62px;left:0;bottom:0;width:308px;overflow-y:auto;
+    padding:20px 14px 40px 20px;border-right:1px solid var(--border);
+    background:rgba(13,17,23,.6);backdrop-filter:blur(8px);
+    transition:transform .28s ease;z-index:50;
+  }
+  .sidebar::-webkit-scrollbar{width:9px}
+  .sidebar::-webkit-scrollbar-thumb{background:#2a313a;border-radius:20px}
+  .sidebar::-webkit-scrollbar-thumb:hover{background:#3b444f}
+  .toc-title{
+    font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--dim);margin:0 0 12px 10px;font-weight:700;
+  }
+  #toc{display:flex;flex-direction:column;gap:2px}
+  .toc-link{
+    display:flex;gap:10px;align-items:baseline;padding:7px 10px;
+    border-radius:9px;color:var(--dim);text-decoration:none;
+    font-size:.83rem;line-height:1.35;transition:.15s;
+    border-left:2px solid transparent;
+  }
+  .toc-link:hover{background:rgba(255,255,255,.045);color:var(--text)}
+  .toc-link.active{
+    background:linear-gradient(90deg,rgba(124,58,237,.22),transparent);
+    color:var(--text);border-left-color:var(--accent2);
+  }
+  .toc-link.best{
+    background:linear-gradient(90deg,rgba(34,211,238,.2),transparent);
+    color:var(--text);border-left-color:var(--accent2);
+    box-shadow:inset 0 0 0 1px rgba(34,211,238,.25);
+  }
+  .toc-link .n{
+    font-family:var(--mono);font-size:.7rem;color:var(--accent2);
+    min-width:22px;opacity:.85;
+  }
+  .toc-link.hidden{display:none}
+  .no-results{
+    display:none;
+    padding:12px 14px;
+    margin:12px 8px 0;
+    font-size:.78rem;
+    color:var(--dim);
+    text-align:center;
+    border:1px dashed var(--border);
+    border-radius:10px;
+    font-family:var(--mono);
+  }
+  .no-results.show{display:block}
+  main{margin-left:308px;padding:92px 40px 40px;max-width:1020px}
+  .hero{
+    margin-bottom:34px;padding:30px 34px;border-radius:18px;
+    border:1px solid var(--border);
+    background:
+      radial-gradient(600px 200px at 0% 0%, rgba(124,58,237,.25), transparent 70%),
+      linear-gradient(180deg,var(--bg2),var(--bg));
+    position:relative;overflow:hidden;
+  }
+  .hero::after{
+    content:"";position:absolute;inset:0;
+    background-image:
+      linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+    background-size:34px 34px;mask-image:linear-gradient(180deg,#000,transparent);
+    pointer-events:none;
+  }
+  .hero h1{
+    margin:0;font-size:2.1rem;line-height:1.2;letter-spacing:-.5px;
+    background:linear-gradient(120deg,#fff,var(--accent2) 55%,var(--accent));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .sec{
+    border:1px solid var(--border);border-radius:16px;
+    padding:26px 30px 28px;margin-bottom:20px;
+    background:linear-gradient(180deg,rgba(255,255,255,.022),rgba(255,255,255,0));
+    scroll-margin-top:82px;transition:border-color .25s;
+  }
+  .sec:hover{border-color:#3d4650}
+  .sec h2{
+    display:flex;align-items:center;gap:13px;font-size:1.22rem;
+    margin:0 0 6px;letter-spacing:-.2px;
+  }
+  .sec h2 .num{
+    font-family:var(--mono);font-size:.72rem;font-weight:700;
+    padding:5px 9px;border-radius:9px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    color:#0b0f14;box-shadow:0 0 16px rgba(124,58,237,.35);flex-shrink:0;
+  }
+  .sec h3{
+    font-size:.98rem;margin:22px 0 8px;color:var(--accent2);
+    font-weight:600;letter-spacing:.2px;
+  }
+  .sec h3:first-of-type{margin-top:14px}
+  .sec p{margin:10px 0;color:#c9d1d9}
+  .sec ul,.sec ol{margin:10px 0;padding-left:22px;color:#c9d1d9}
+  .sec li{margin:5px 0}
+  .sec strong{color:#fff;font-weight:600}
+  pre{
+    position:relative;background:#0a0e14;border:1px solid #21262d;
+    border-left:3px solid var(--accent);border-radius:11px;
+    padding:16px 18px;overflow-x:auto;margin:14px 0;
+    font-size:.855rem;line-height:1.68;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+  }
+  pre::-webkit-scrollbar{height:9px}
+  pre::-webkit-scrollbar-thumb{background:#2a313a;border-radius:20px}
+  code{font-family:var(--mono)}
+  pre code{color:#e6edf3;white-space:pre}
+  .k{color:#ff7b72}.s{color:#a5d6ff}.n{color:#79c0ff}
+  .c{color:#6e7681;font-style:italic}.f{color:#d2a8ff}.o{color:#ffa657}
+  .out{
+    background:rgba(63,185,80,.08);border:1px solid rgba(63,185,80,.22);
+    border-left:3px solid var(--green);border-radius:10px;
+    padding:11px 16px;margin:10px 0 16px;color:#7ee787;
+    font-family:var(--mono);font-size:.83rem;white-space:pre-wrap;line-height:1.6;
+  }
+  .out::before{
+    content:"SAÍDA";display:block;font-size:.62rem;letter-spacing:.14em;
+    color:rgba(126,231,135,.55);margin-bottom:5px;font-weight:700;
+  }
+  .note{
+    border-left:3px solid var(--yellow);background:rgba(210,153,34,.09);
+    border-radius:10px;padding:12px 18px;margin:14px 0;
+    color:#e3d3a8;font-size:.92rem;
+  }
+  .note strong{color:var(--yellow)}
+  .warn{border-left-color:var(--red);background:rgba(248,81,73,.09);color:#ffc4c0}
+  .warn strong{color:var(--red)}
+  .tip{border-left-color:var(--accent2);background:rgba(34,211,238,.08);color:#bfeaf5}
+  .tip strong{color:var(--accent2)}
+  .copy{
+    position:absolute;top:9px;right:9px;background:#1c2128;
+    border:1px solid var(--border);color:var(--dim);
+    font-size:.68rem;font-family:var(--mono);padding:4px 10px;
+    border-radius:7px;cursor:pointer;opacity:0;transition:.18s;
+  }
+  pre:hover .copy{opacity:1}
+  .copy:hover{color:var(--text);border-color:var(--accent)}
+  .copy.done{color:var(--green);border-color:rgba(63,185,80,.5)}
+  table{
+    width:100%;border-collapse:collapse;margin:16px 0;font-size:.875rem;
+    border:1px solid var(--border);border-radius:11px;overflow:hidden;
+  }
+  th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)}
+  th{
+    background:rgba(255,255,255,.035);color:var(--dim);
+    font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;font-weight:700;
+  }
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover td{background:rgba(255,255,255,.022)}
+  td code{
+    background:rgba(124,58,237,.18);padding:2px 7px;border-radius:6px;
+    color:var(--pink);font-size:.82rem;
+  }
+  .sum-grid{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(275px,1fr));
+    gap:15px;margin-top:20px;
+  }
+  .sum-card{
+    border:1px solid var(--border);border-radius:13px;
+    padding:16px 18px;
+    background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,0));
+    transition:.22s;
+  }
+  .sum-card:hover{
+    border-color:rgba(124,58,237,.6);transform:translateY(-2px);
+    box-shadow:0 10px 26px -14px rgba(124,58,237,.7);
+  }
+  .sum-card h3{
+    margin:0 0 10px;font-size:.88rem;color:var(--text);
+    display:flex;align-items:center;gap:8px;
+  }
+  .sum-card ul{margin:0;padding:0;list-style:none}
+  .sum-card li{
+    font-size:.79rem;color:var(--dim);padding:3px 0 3px 14px;
+    position:relative;line-height:1.5;
+  }
+  .sum-card li::before{
+    content:"";position:absolute;left:0;top:11px;
+    width:5px;height:5px;border-radius:50%;background:var(--accent2);opacity:.65;
+  }
+  .sum-card li b{color:#c9d1d9;font-weight:600}
+
+  /* ===== MODAL MENTALIDADE ===== */
+  .mindset{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+    gap:10px;
+    margin:22px 0 24px;
+  }
+  .mind-item{
+    display:flex;align-items:center;gap:14px;
+    padding:12px 16px;
+    border:1px solid var(--border);
+    border-radius:11px;
+    background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0));
+    font-size:.88rem;
+    font-family:inherit;
+    color:inherit;
+    text-align:left;
+    width:100%;
+    cursor:pointer;
+    transition:.2s;
+  }
+  .mind-item:hover,
+  .mind-item:focus-visible{
+    border-color:rgba(124,58,237,.7);
+    transform:translateX(3px);
+    box-shadow:0 8px 22px -14px rgba(124,58,237,.8);
+    background:linear-gradient(180deg,rgba(124,58,237,.12),rgba(34,211,238,.04));
+    outline:none;
+  }
+  .mind-item:hover .a,
+  .mind-item:focus-visible .a{
+    background:rgba(34,211,238,.18);
+    border-color:rgba(34,211,238,.5);
+  }
+  .mind-item .q{color:#c9d1d9;flex:1;line-height:1.45}
+  .mind-item .a{
+    font-family:var(--mono);
+    color:var(--accent2);
+    font-size:.8rem;
+    padding:4px 11px;
+    border-radius:7px;
+    background:rgba(34,211,238,.08);
+    border:1px solid rgba(34,211,238,.22);
+    white-space:nowrap;
+    flex-shrink:0;
+    transition:.2s;
+  }
+
+  /* ===== FABs ===== */
+  .fab{
+    position:fixed;
+    right:26px;
+    width:60px;
+    height:60px;
+    border-radius:50%;
+    border:none;
+    cursor:pointer;
+    display:grid;
+    place-items:center;
+    z-index:55;
+    transition:transform .22s cubic-bezier(.2,.8,.3,1.3), box-shadow .22s, opacity .28s;
+    color:#0b0f14;
+  }
+  .fab svg{width:26px;height:26px}
+
+  /* FAB modal (regra principal) */
+  .fab-main{
+    bottom:26px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    box-shadow:
+      0 10px 30px -6px rgba(124,58,237,.7),
+      0 0 0 0 rgba(124,58,237,.5);
+    animation:pulse 3.2s ease-in-out infinite;
+  }
+  .fab-main:hover{
+    transform:scale(1.1) rotate(-8deg);
+    box-shadow:
+      0 14px 40px -6px rgba(124,58,237,.9),
+      0 0 0 8px rgba(124,58,237,.12);
+  }
+  .fab-main:active{transform:scale(.96)}
+  @keyframes pulse{
+    0%,100%{box-shadow:0 10px 30px -6px rgba(124,58,237,.7), 0 0 0 0 rgba(124,58,237,.5);}
+    50%{box-shadow:0 10px 30px -6px rgba(124,58,237,.7), 0 0 0 14px rgba(124,58,237,0);}
+  }
+
+  /* FAB voltar ao topo */
+  .fab-top{
+    bottom:98px;
+    background:linear-gradient(135deg,var(--accent2),var(--accent));
+    box-shadow:0 10px 30px -6px rgba(34,211,238,.6);
+    opacity:0;
+    pointer-events:none;
+    transform:translateY(10px);
+  }
+  .fab-top.visible{
+    opacity:1;
+    pointer-events:auto;
+    transform:translateY(0);
+  }
+  .fab-top:hover{
+    transform:scale(1.1);
+    box-shadow:
+      0 14px 40px -6px rgba(34,211,238,.85),
+      0 0 0 8px rgba(34,211,238,.12);
+  }
+  .fab-top:active{transform:scale(.96)}
+
+  /* ===== MODAL ===== */
+  .modal-backdrop{
+    position:fixed;
+    inset:0;
+    background:rgba(5,8,13,.72);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    z-index:70;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  .modal-backdrop.open{
+    display:flex;
+    animation:fadeIn .22s ease;
+  }
+  .modal{
+    background:
+      radial-gradient(500px 200px at 100% 0%, rgba(124,58,237,.18), transparent 70%),
+      linear-gradient(180deg,var(--bg2),var(--bg));
+    border:1px solid var(--border);
+    border-radius:18px;
+    width:100%;
+    max-width:760px;
+    max-height:88vh;
+    overflow-y:auto;
+    padding:30px 34px 32px;
+    position:relative;
+    box-shadow:
+      0 40px 100px -30px rgba(0,0,0,.9),
+      0 0 0 1px rgba(124,58,237,.25),
+      0 0 60px -20px rgba(124,58,237,.5);
+    animation:slideUp .3s cubic-bezier(.2,.8,.2,1);
+  }
+  .modal::-webkit-scrollbar{width:9px}
+  .modal::-webkit-scrollbar-thumb{background:#2a313a;border-radius:20px}
+  .modal h2{
+    display:flex;align-items:center;gap:13px;
+    font-size:1.35rem;
+    margin:0 0 16px;
+    letter-spacing:-.3px;
+    padding-right:44px;
+  }
+  .modal-num{
+    font-family:var(--mono);
+    font-size:.75rem;font-weight:700;
+    padding:5px 10px;border-radius:9px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    color:#0b0f14;
+    box-shadow:0 0 16px rgba(124,58,237,.5);
+    flex-shrink:0;
+  }
+  .modal p{margin:10px 0;color:#c9d1d9}
+  .modal strong{color:#fff}
+  .modal-close{
+    position:absolute;
+    top:18px;right:18px;
+    width:38px;height:38px;
+    border-radius:10px;
+    background:var(--bg3);
+    border:1px solid var(--border);
+    color:var(--dim);
+    font-size:1.4rem;
+    line-height:1;
+    cursor:pointer;
+    display:grid;
+    place-items:center;
+    transition:.18s;
+    font-family:inherit;
+    padding:0;
+  }
+  .modal-close:hover{
+    color:var(--text);
+    border-color:var(--accent);
+    background:var(--bg2);
+    transform:rotate(90deg);
+  }
+  .modal .mindset{margin-top:18px}
+  .modal-hint{
+    font-size:.78rem;
+    color:var(--dim);
+    font-family:var(--mono);
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-top:8px;
+  }
+  .modal-hint::before{content:"💡";font-size:1rem}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes slideUp{
+    from{transform:translateY(24px) scale(.97);opacity:0}
+    to{transform:translateY(0) scale(1);opacity:1}
+  }
+
+  /* ===== FOOTER ===== */
+  .footer{
+    margin-top:48px;
+    padding:24px 20px 8px;
+    text-align:center;
+    border-top:1px solid var(--border);
+    color:var(--dim);
+    font-size:.85rem;
+    font-family:var(--mono);
+    letter-spacing:.3px;
+  }
+  .footer a{
+    color:var(--dim);
+    text-decoration:none;
+    padding:6px 12px;
+    border-radius:8px;
+    transition:.2s;
+    display:inline-block;
+  }
+  .footer a:hover{color:var(--accent2);background:rgba(34,211,238,.07)}
+
+  @media (max-width:1000px){
+    .menu-btn{display:block}
+    .sidebar{transform:translateX(-100%);width:280px;background:var(--bg2)}
+    .sidebar.open{transform:translateX(0)}
+    main{margin-left:0;padding:88px 18px 40px}
+    #search{width:140px}
+    .sec{padding:22px 20px}
+    .hero{padding:24px 22px}
+    .hero h1{font-size:1.6rem}
+    .modal{padding:24px 22px 28px;border-radius:14px}
+    .modal h2{font-size:1.15rem;padding-right:38px}
+    .fab{width:54px;height:54px;right:18px}
+    .fab-main{bottom:18px}
+    .fab-top{bottom:82px}
+    .fab svg{width:22px;height:22px}
+  }
+  @media (max-width:520px){
+    #search{display:none}
+    .brand span:last-child{font-size:.85rem}
+    .mind-item{flex-direction:column;align-items:flex-start;gap:8px}
+    .mind-item .a{white-space:normal}
+    .modal-backdrop{padding:12px}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <button class="menu-btn" id="menuBtn" aria-label="Abrir menu">☰</button>
+  <div class="brand">
+    <span class="logo">JS</span>
+    <span>Fundamentos de JavaScript</span>
+  </div>
+  <div class="topbar-actions">
+    <input id="search" type="search" placeholder="Buscar no guia...">
+  </div>
+</header>
+
+<aside class="sidebar" id="sidebar">
+  <p class="toc-title">Conteúdo</p>
+  <nav id="toc"></nav>
+  <div class="no-results" id="noResults">Nada encontrado 😕</div>
+</aside>
+
+<main id="main">
+
+  <div class="hero">
+    <h1>Fundamentos de JavaScript</h1>
+  </div>
+
+  <!-- ============ 01 ============ -->
+  <section class="sec" id="s1">
+    <h2><span class="num">01</span> Variáveis</h2>
+    <p>Variáveis armazenam valores que podemos usar durante a execução do programa.</p>
+    <h3>const</h3>
+    <p>Use quando a variável <strong>não será reatribuída</strong>.</p>
+<pre><code>const NOME = "Bruno";</code></pre>
+    <p>Não podemos fazer:</p>
+<pre><code>NOME = "Carlos"; // Erro</code></pre>
+    <h3>let</h3>
+    <p>Use quando o valor <strong>poderá mudar</strong>.</p>
+<pre><code>let vida = 100;
+vida = 80;
+vida = 50;</code></pre>
+  </section>
+
+  <!-- ============ 02 ============ -->
+  <section class="sec" id="s2">
+    <h2><span class="num">02</span> Tipos de valores</h2>
+    <h3>string</h3>
+    <p>Representa texto.</p>
+<pre><code>let nome = "Bruno";
+let classe = "Guerreiro";</code></pre>
+    <h3>number</h3>
+    <p>Representa números inteiros ou decimais.</p>
+<pre><code>let vida = 100;
+let velocidade = 10.5;</code></pre>
+    <h3>boolean</h3>
+    <p>Representa apenas <code>true</code> ou <code>false</code>.</p>
+<pre><code>let jogadorVivo = true;
+jogadorVivo = false;</code></pre>
+  </section>
+
+  <!-- ============ 03 ============ -->
+  <section class="sec" id="s3">
+    <h2><span class="num">03</span> null</h2>
+    <p>Representa a <strong>ausência intencional</strong> de um valor.</p>
+<pre><code>let alvo = null;</code></pre>
+    <p>Significa: <em>"Neste momento, não existe um alvo."</em></p>
+    <p>Depois podemos atribuir um valor:</p>
+<pre><code>alvo = "Slime";</code></pre>
+  </section>
+
+  <!-- ============ 04 ============ -->
+  <section class="sec" id="s4">
+    <h2><span class="num">04</span> undefined</h2>
+    <p>Significa que uma variável <strong>não possui um valor definido</strong>.</p>
+<pre><code>let nome;
+
+console.log(nome);</code></pre>
+    <div class="out">undefined</div>
+    <p>Também acontece ao acessar uma propriedade que não existe:</p>
+<pre><code>const jogador = {
+    nome: "Bruno"
+};
+
+console.log(jogador.vida);</code></pre>
+    <div class="out">undefined</div>
+  </section>
+
+  <!-- ============ 05 ============ -->
+  <section class="sec" id="s5">
+    <h2><span class="num">05</span> typeof</h2>
+    <p><code>typeof</code> verifica o tipo de um valor.</p>
+<pre><code>let nome = "Bruno";
+let vida = 100;
+let vivo = true;
+
+console.log(typeof nome);
+console.log(typeof vida);
+console.log(typeof vivo);</code></pre>
+    <div class="out">string
+number
+boolean</div>
+    <p>Podemos usar diretamente:</p>
+<pre><code>console.log(typeof "Bruno"); // string
+console.log(typeof 100);     // number
+console.log(typeof true);    // boolean</code></pre>
+    <div class="note">
+      <strong>Atenção com null</strong><br>
+      <code>console.log(typeof null)</code> retorna <code>"object"</code>.
+      Isso é um comportamento histórico do JavaScript que nunca foi corrigido para não quebrar código existente.
+    </div>
+<pre><code>console.log(typeof null);</code></pre>
+    <div class="out">object</div>
+    <div class="tip note">
+      <strong>Bônus:</strong> <code>typeof NaN</code> também retorna <code>"number"</code>.
+      Ou seja, <code>NaN</code> é tecnicamente um valor numérico inválido.
+    </div>
+  </section>
+
+  <!-- ============ 06 ============ -->
+  <section class="sec" id="s6">
+    <h2><span class="num">06</span> Operadores</h2>
+    <p>Os operadores são símbolos usados para realizar operações com valores. Nos exemplos abaixo, considere <code>const a = 10;</code> e <code>const b = 5;</code>.</p>
+    <h3>Soma (+)</h3>
+<pre><code>const c = a + b;</code></pre>
+    <p>Soma o valor de <code>a</code> com o valor de <code>b</code>.</p>
+    <h3>Subtração (-)</h3>
+<pre><code>const c = a - b;</code></pre>
+    <p>Subtrai o valor de <code>b</code> do valor de <code>a</code>.</p>
+    <h3>Multiplicação (*)</h3>
+<pre><code>const c = a * b;</code></pre>
+    <p>Multiplica o valor de <code>a</code> pelo valor de <code>b</code>.</p>
+    <h3>Divisão (/)</h3>
+<pre><code>const c = a / b;</code></pre>
+    <p>Divide o valor de <code>a</code> pelo valor de <code>b</code>.</p>
+    <h3>Módulo (%)</h3>
+<pre><code>const c = a % b;</code></pre>
+    <p>O operador <code>%</code> retorna o <strong>resto da divisão</strong>.</p>
+<pre><code>const resultado = 10 % 3;
+
+console.log(resultado);</code></pre>
+    <div class="out">1</div>
+    <p>Isso acontece porque <code>10 / 3</code> resulta em <code>3</code>, com resto <code>1</code>.</p>
+  </section>
+
+  <!-- ============ 07 ============ -->
+  <section class="sec" id="s7">
+    <h2><span class="num">07</span> String + Number</h2>
+    <p>Aqui existe uma pegadinha clássica. Quando usamos <code>+</code> com uma string, o JavaScript pode <strong>concatenar</strong> os valores.</p>
+<pre><code>let vida = 100;
+
+console.log("Vida: " + vida);</code></pre>
+    <div class="out">Vida: 100</div>
+    <p>Mas:</p>
+<pre><code>console.log("10" + 5);</code></pre>
+    <div class="out">105</div>
+    <p>O <code>5</code> foi convertido para texto.</p>
+  </section>
+
+  <!-- ============ 08 ============ -->
+  <section class="sec" id="s8">
+    <h2><span class="num">08</span> Number + Number</h2>
+    <p>Quando os dois valores são números, ocorre uma <strong>soma normal</strong>.</p>
+<pre><code>console.log(10 + 5);</code></pre>
+    <div class="out">15</div>
+  </section>
+
+  <!-- ============ 09 ============ -->
+  <section class="sec" id="s9">
+    <h2><span class="num">09</span> String + String</h2>
+    <p>Duas strings são <strong>concatenadas</strong>.</p>
+<pre><code>console.log("10" + "5");</code></pre>
+    <div class="out">105</div>
+    <p>Não é uma soma matemática.</p>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section class="sec" id="s10">
+    <h2><span class="num">10</span> String - Number</h2>
+    <p>Com <code>-</code>, o JavaScript tenta <strong>converter a string para número</strong>.</p>
+<pre><code>console.log("10" - 5);</code></pre>
+    <div class="out">5</div>
+    <p>Isso também acontece com <code>*</code> e <code>/</code>:</p>
+<pre><code>console.log("10" * 2); // 20
+console.log("10" / 2); // 5</code></pre>
+  </section>
+
+  <!-- ============ 11 ============ -->
+  <section class="sec" id="s11">
+    <h2><span class="num">11</span> Quando a conversão não funciona</h2>
+    <p>Se o texto não representa um número:</p>
+<pre><code>console.log("Bruno" - 5);</code></pre>
+    <div class="out">NaN</div>
+    <p><code>NaN</code> significa <strong>Not a Number</strong> (não é um número).</p>
+  </section>
+
+  <!-- ============ 12 ============ -->
+  <section class="sec" id="s12">
+    <h2><span class="num">12</span> Conversão de String para Number</h2>
+    <p>Podemos converter explicitamente:</p>
+<pre><code>let valor = "10";
+
+let numero = Number(valor);
+
+console.log(numero);</code></pre>
+    <div class="out">10</div>
+    <p>Agora:</p>
+<pre><code>console.log(typeof numero);</code></pre>
+    <div class="out">number</div>
+  </section>
+
+  <!-- ============ 13 ============ -->
+  <section class="sec" id="s13">
+    <h2><span class="num">13</span> Conversão de Number para String</h2>
+    <p>Também podemos transformar um número em texto:</p>
+<pre><code>let vida = 100;
+
+let texto = String(vida);
+
+console.log(typeof texto);</code></pre>
+    <div class="out">string</div>
+  </section>
+
+  <!-- ============ 14 ============ -->
+  <section class="sec" id="s14">
+    <h2><span class="num">14</span> Comparações</h2>
+    <p>Os operadores de comparação são usados para comparar valores.</p>
+    <table>
+      <thead><tr><th>Operador</th><th>Nome</th><th>Exemplo</th><th>Resultado</th></tr></thead>
+      <tbody>
+        <tr><td><code>&gt;</code></td><td>maior que</td><td><code>10 &gt; 5</code></td><td><code>true</code></td></tr>
+        <tr><td><code>&lt;</code></td><td>menor que</td><td><code>5 &lt; 10</code></td><td><code>true</code></td></tr>
+        <tr><td><code>&gt;=</code></td><td>maior ou igual a</td><td><code>10 &gt;= 10</code></td><td><code>true</code></td></tr>
+        <tr><td><code>&lt;=</code></td><td>menor ou igual a</td><td><code>10 &lt;= 10</code></td><td><code>true</code></td></tr>
+        <tr><td><code>==</code></td><td>igual, com conversão de tipo</td><td><code>10 == "10"</code></td><td><code>true</code></td></tr>
+        <tr><td><code>===</code></td><td>estritamente igual</td><td><code>10 === "10"</code></td><td><code>false</code></td></tr>
+        <tr><td><code>!=</code></td><td>diferente, com conversão de tipo</td><td><code>10 != "10"</code></td><td><code>false</code></td></tr>
+        <tr><td><code>!==</code></td><td>estritamente diferente</td><td><code>10 !== "10"</code></td><td><code>true</code></td></tr>
+      </tbody>
+    </table>
+    <h3>== x ===</h3>
+    <p>O <code>==</code> pode fazer <strong>conversão de tipo</strong> antes de comparar.</p>
+<pre><code>10 == "10"</code></pre>
+    <div class="out">true</div>
+    <p>Já o <code>===</code> compara o <strong>valor e o tipo</strong>.</p>
+<pre><code>10 === "10"</code></pre>
+    <div class="out">false</div>
+    <div class="tip note">
+      <strong>Boa prática:</strong> no JavaScript moderno, normalmente damos preferência ao
+      <code>===</code> e ao <code>!==</code>, porque evitam conversões inesperadas.
+    </div>
+  </section>
+
+  <!-- ============ 15 ============ -->
+  <section class="sec" id="s15">
+    <h2><span class="num">15</span> Estruturas de decisão</h2>
+    <h3>if</h3>
+    <p>O <code>if</code> significa basicamente: <em>"Se essa condição for verdadeira, faça isso."</em></p>
+<pre><code>if (vida === 0) {
+    console.log("O personagem desmaiou!");
+}</code></pre>
+    <p>Nesse exemplo, a mensagem será exibida somente se <code>vida</code> for exatamente igual a <code>0</code>.</p>
+    <h3>else</h3>
+    <p>O <code>else</code> define o que acontece quando a condição do <code>if</code> for <strong>falsa</strong>.</p>
+<pre><code>if (vida &gt; 0) {
+    console.log("O personagem está vivo!");
+} else {
+    console.log("O personagem desmaiou!");
+}</code></pre>
+    <p>Aqui, se <code>vida</code> for maior que <code>0</code>, o personagem está vivo. Caso contrário, o <code>else</code> será executado.</p>
+    <h3>else if</h3>
+    <p>O <code>else if</code> serve para verificar uma <strong>nova condição</strong> quando a anterior for falsa.</p>
+<pre><code>if (vida &gt; 49) {
+    console.log("O personagem está vivo!");
+} else if (vida &gt; 0) {
+    console.log("O personagem está ferido!");
+} else {
+    console.log("O personagem está morto!");
+}</code></pre>
+    <ul>
+      <li>Se <code>vida</code> for maior que <code>49</code> → personagem está vivo.</li>
+      <li>Se não for maior que <code>49</code>, mas for maior que <code>0</code> → personagem está ferido.</li>
+      <li>Se nenhuma das duas condições for verdadeira → personagem está morto.</li>
+    </ul>
+    <p>O JavaScript verifica as condições <strong>de cima para baixo</strong> e executa o primeiro bloco cuja condição seja verdadeira.</p>
+  </section>
+
+  <!-- ============ 16 ============ -->
+  <section class="sec" id="s16">
+    <h2><span class="num">16</span> switch...case</h2>
+    <p>O <code>switch...case</code> é usado quando queremos verificar <strong>várias possibilidades para um mesmo valor</strong>.</p>
+<pre><code>switch (classe) {
+    case "Guerreiro":
+        console.log("Você escolheu Guerreiro!");
+        break;
+
+    case "Mago":
+        console.log("Você escolheu Mago!");
+        break;
+
+    case "Arqueiro":
+        console.log("Você escolheu Arqueiro!");
+        break;
+
+    default:
+        console.log("Classe inválida!");
+}</code></pre>
+    <ul>
+      <li>O <code>switch</code> verifica o valor de <code>classe</code>.</li>
+      <li>O <code>case</code> representa cada possibilidade que queremos verificar.</li>
+      <li>O <code>break</code> faz o <code>switch</code> parar depois que o caso correspondente for executado.</li>
+      <li>O <code>default</code> será executado quando nenhum dos <code>case</code> corresponder ao valor.</li>
+    </ul>
+  </section>
+
+  <!-- ============ 17 ============ -->
+  <section class="sec" id="s17">
+    <h2><span class="num">17</span> while e do...while</h2>
+    <p>Os laços de repetição (também chamados de <em>loops</em>) são usados quando queremos executar determinado código <strong>várias vezes</strong>.</p>
+    <h3>while</h3>
+    <p>O <code>while</code> significa basicamente: <em>"Enquanto essa condição for verdadeira, faça isso."</em></p>
+<pre><code>while (vida &gt; 0) {
+    console.log("O monstro está vivo!");
+
+    vida = vida - 10;
+}</code></pre>
+    <p>Enquanto <code>vida</code> for maior que <code>0</code>, o código dentro do <code>while</code> continuará sendo executado. A cada repetição, <code>vida</code> diminui <code>10</code>. Quando chegar a <code>0</code> ou menos, a condição fica falsa e o laço é encerrado.</p>
+    <p>O <code>while</code> <strong>verifica a condição antes</strong> de executar.</p>
+    <h3>do...while</h3>
+    <p>O <code>do...while</code> é parecido, mas o código é executado <strong>primeiro</strong> e a condição é verificada <strong>depois</strong>.</p>
+<pre><code>do {
+    console.log("O monstro está vivo!");
+
+    vida = vida - 10;
+} while (vida &gt; 0);</code></pre>
+    <p>Nesse caso, o código dentro do <code>do</code> será executado <strong>pelo menos uma vez</strong>, mesmo que <code>vida</code> já seja <code>0</code>.</p>
+    <div class="note">
+      <strong>Resumindo:</strong><br>
+      <code>while</code> → verifica a condição primeiro e depois executa.<br>
+      <code>do...while</code> → executa primeiro e depois verifica a condição.
+    </div>
+  </section>
+
+  <!-- ============ 18 ============ -->
+  <section class="sec" id="s18">
+    <h2><span class="num">18</span> for</h2>
+    <p>O <code>for</code> também é usado para repetição. É muito útil quando queremos controlar a repetição usando uma <strong>variável de controle</strong>.</p>
+<pre><code>for (let i = 0; i &lt; 5; i++) {
+    console.log("Ataque!");
+}</code></pre>
+    <p>Nesse exemplo, <code>"Ataque!"</code> será exibido <strong>5 vezes</strong>.</p>
+    <p>O <code>for</code> possui três partes principais:</p>
+<pre><code>for (inicialização; condição; atualização) {
+    // código que será repetido
+}</code></pre>
+    <ul>
+      <li><code>let i = 0</code> → cria a variável e define seu valor inicial.</li>
+      <li><code>i &lt; 5</code> → enquanto essa condição for verdadeira, o código continua sendo repetido.</li>
+      <li><code>i++</code> → aumenta o valor de <code>i</code> em 1 a cada repetição.</li>
+    </ul>
+  </section>
+
+  <!-- ============ 19 ============ -->
+  <section class="sec" id="s19">
+    <h2><span class="num">19</span> break</h2>
+    <p>O <code>break</code> é usado para <strong>interromper</strong> um laço de repetição ou um <code>switch</code>.</p>
+<pre><code>for (let i = 0; i &lt; 10; i++) {
+
+    if (i === 5) {
+        break;
+    }
+
+    console.log(i);
+}</code></pre>
+    <p>Quando <code>i</code> chegar a <code>5</code>, o <code>break</code> interromperá o <code>for</code>.</p>
+    <div class="out">0
+1
+2
+3
+4</div>
+  </section>
+
+  <!-- ============ 20 ============ -->
+  <section class="sec" id="s20">
+    <h2><span class="num">20</span> continue</h2>
+    <p>O <code>continue</code> é usado para <strong>pular a repetição atual</strong> e continuar com a próxima.</p>
+<pre><code>for (let i = 0; i &lt; 5; i++) {
+
+    if (i === 2) {
+        continue;
+    }
+
+    console.log(i);
+}</code></pre>
+    <p>Quando <code>i</code> for <code>2</code>, o <code>continue</code> fará o código pular aquela repetição.</p>
+    <div class="out">0
+1
+3
+4</div>
+    <div class="note">
+      <strong>A diferença:</strong><br>
+      <code>break</code> → para o laço completamente.<br>
+      <code>continue</code> → pula apenas a repetição atual.
+    </div>
+  </section>
+
+  <!-- ============ 21 ============ -->
+  <section class="sec" id="s21">
+    <h2><span class="num">21</span> Arrays</h2>
+    <p>Um array é uma estrutura usada para armazenar <strong>vários valores em uma única variável</strong>.</p>
+<pre><code>const personagens = ["Guerreiro", "Mago", "Arqueiro"];</code></pre>
+    <p>Cada elemento possui uma posição, chamada de <strong>índice</strong>. O índice <strong>começa em 0</strong>.</p>
+<pre><code>console.log(personagens[0]);</code></pre>
+    <div class="out">Guerreiro</div>
+<pre><code>console.log(personagens[1]);</code></pre>
+    <div class="out">Mago</div>
+  </section>
+
+  <!-- ============ 22 ============ -->
+  <section class="sec" id="s22">
+    <h2><span class="num">22</span> Métodos de Array</h2>
+    <p>Arrays possuem vários métodos que facilitam o trabalho com listas de valores.</p>
+    <h3>.push()</h3>
+    <p>Adiciona um valor ao <strong>final</strong> do array.</p>
+<pre><code>personagens.push("Ladino");</code></pre>
+    <h3>.pop()</h3>
+    <p>Remove o <strong>último</strong> valor do array.</p>
+<pre><code>personagens.pop();</code></pre>
+    <h3>.shift()</h3>
+    <p>Remove o <strong>primeiro</strong> valor do array.</p>
+<pre><code>personagens.shift();</code></pre>
+    <h3>.unshift()</h3>
+    <p>Adiciona um valor no <strong>início</strong> do array.</p>
+<pre><code>personagens.unshift("Paladino");</code></pre>
+  </section>
+
+  <!-- ============ 23 ============ -->
+  <section class="sec" id="s23">
+    <h2><span class="num">23</span> for...of</h2>
+    <p>O <code>for...of</code> é usado para percorrer os <strong>valores</strong> de algo que pode ser iterado, como um array ou uma string.</p>
+<pre><code>const personagens = ["Guerreiro", "Mago", "Arqueiro"];
+
+for (const personagem of personagens) {
+    console.log(personagem);
+}</code></pre>
+    <div class="out">Guerreiro
+Mago
+Arqueiro</div>
+    <p>Podemos pensar no <code>for...of</code> como: <em>"Para cada valor dentro disso, faça isso."</em></p>
+  </section>
+
+  <!-- ============ 24 ============ -->
+  <section class="sec" id="s24">
+    <h2><span class="num">24</span> for...in</h2>
+    <p>O <code>for...in</code> é usado principalmente para percorrer as <strong>propriedades</strong> de um objeto.</p>
+<pre><code>const personagem = {
+    nome: "Bruno",
+    classe: "Guerreiro",
+    nivel: 1
+};
+
+for (const propriedade in personagem) {
+    console.log(propriedade);
+}</code></pre>
+    <div class="out">nome
+classe
+nivel</div>
+    <p>Podemos também utilizar a propriedade para acessar seu valor:</p>
+<pre><code>for (const propriedade in personagem) {
+    console.log(personagem[propriedade]);
+}</code></pre>
+    <div class="out">Bruno
+Guerreiro
+1</div>
+    <div class="note">
+      <strong>Forma simples de lembrar:</strong><br>
+      <code>for...of</code> → valores<br>
+      <code>for...in</code> → propriedades / chaves
+    </div>
+  </section>
+
+  <!-- ============ 25 ============ -->
+  <section class="sec" id="s25">
+    <h2><span class="num">25</span> Funções</h2>
+    <p>Funções são blocos de código criados para executar uma <strong>determinada tarefa</strong>.</p>
+<pre><code>function calcularDano(ataque, defesa) {
+    const dano = ataque - defesa;
+
+    if (dano &lt; 0) {
+        return 0;
+    }
+
+    return dano;
+}</code></pre>
+    <p>Podemos guardar o valor retornado:</p>
+<pre><code>const danoCausado = calcularDano(10, 3);
+
+console.log(danoCausado);</code></pre>
+    <div class="out">7</div>
+    <h3>Parâmetros</h3>
+    <p>Os parâmetros são os valores que a função recebe.</p>
+<pre><code>function calcularDano(ataque, defesa) {
+    return ataque - defesa;
+}</code></pre>
+    <p>Aqui:</p>
+    <ul>
+      <li><code>ataque</code> → primeiro parâmetro</li>
+      <li><code>defesa</code> → segundo parâmetro</li>
+    </ul>
+    <p>Quando chamamos <code>calcularDano(10, 3)</code>, temos <code>ataque = 10</code> e <code>defesa = 3</code>.</p>
+    <h3>return</h3>
+    <p><code>return</code> devolve um valor para quem chamou a função.</p>
+<pre><code>function somar(a, b) {
+    return a + b;
+}
+
+const resultado = somar(5, 10);
+
+console.log(resultado);</code></pre>
+    <div class="out">15</div>
+    <p>Pense em <code>return</code> como: <em>"Faça o cálculo e me entregue o resultado."</em></p>
+  </section>
+
+  <!-- ============ 26 ============ -->
+  <section class="sec" id="s26">
+    <h2><span class="num">26</span> Escopo</h2>
+    <p>Escopo define <strong>onde uma variável pode ser acessada</strong>.</p>
+<pre><code>const nome = "Bruno";
+
+function mostrarNome() {
+    console.log(nome);
+}
+
+mostrarNome();</code></pre>
+    <p>A função consegue acessar <code>nome</code> porque <code>nome</code> está em um <strong>escopo externo</strong>.</p>
+    <p>Agora:</p>
+<pre><code>function criarPersonagem() {
+    const nome = "Bruno";
+
+    console.log(nome);
+}
+
+criarPersonagem();
+
+console.log(nome);</code></pre>
+    <p>O segundo <code>console.log</code> gera erro, porque <code>nome</code> foi criada <strong>dentro da função</strong>.</p>
+    <h3>Regra simples</h3>
+<pre><code>const nome = "Bruno";
+
+function exemplo() {
+    const idade = 30;
+
+    console.log(nome);  // funciona
+    console.log(idade); // funciona
+}
+
+console.log(nome);  // funciona
+console.log(idade); // erro</code></pre>
+    <p>Uma variável criada dentro de uma função normalmente pertence ao <strong>escopo daquela função</strong>.</p>
+    <h3>Escopo de bloco</h3>
+    <p><code>let</code> e <code>const</code> também respeitam blocos <code>{ }</code>.</p>
+<pre><code>if (true) {
+    const vida = 100;
+
+    console.log(vida); // funciona
+}
+
+console.log(vida); // erro</code></pre>
+  </section>
+
+  <!-- ============ 27 ============ -->
+  <section class="sec" id="s27">
+    <h2><span class="num">27</span> try...catch</h2>
+    <p>O <code>try...catch</code> é usado para <strong>tratar erros</strong> que podem acontecer durante a execução do código.</p>
+<pre><code>try {
+    console.log(nome);
+} catch (erro) {
+    console.log("Ocorreu um erro!");
+}</code></pre>
+    <p>Podemos pensar assim:</p>
+    <ul>
+      <li><code>try</code> → "Tente executar isso."</li>
+      <li><code>catch</code> → "Se der erro, faça isso."</li>
+    </ul>
+    <p>Também podemos acessar informações sobre o erro:</p>
+<pre><code>try {
+    console.log(nome);
+} catch (erro) {
+    console.log(erro);
+}</code></pre>
+  </section>
+
+  <!-- ============ 28 ============ -->
+  <section class="sec" id="s28">
+    <h2><span class="num">28</span> Objetos</h2>
+    <p>Objetos permitem <strong>agrupar informações relacionadas</strong>.</p>
+<pre><code>const personagem = {
+    nome: "Bruno",
+    classe: "Guerreiro",
+    nivel: 1,
+    vida: 100,
+    ataque: 10,
+    defesa: 5
+};</code></pre>
+    <p>Aqui temos um único objeto contendo várias <strong>propriedades</strong>.</p>
+    <p>Podemos acessar uma propriedade usando <code>.</code>:</p>
+<pre><code>console.log(personagem.nome);
+console.log(personagem.vida);
+console.log(personagem.ataque);</code></pre>
+    <div class="out">Bruno
+100
+10</div>
+    <h3>Alterando propriedades</h3>
+    <p>Mesmo sendo <code>const</code>, podemos alterar propriedades do objeto:</p>
+<pre><code>const personagem = {
+    nome: "Bruno",
+    vida: 100
+};
+
+personagem.vida = 80;
+
+console.log(personagem.vida);</code></pre>
+    <div class="out">80</div>
+    <p>Isso acontece porque <code>const</code> impede a variável de receber <strong>outro objeto</strong>, mas não impede a alteração das <strong>propriedades</strong> do objeto.</p>
+  </section>
+
+  <!-- ============ 29 ============ -->
+  <section class="sec" id="s29">
+    <h2><span class="num">29</span> Métodos</h2>
+    <p>Um <strong>método</strong> é uma função que pertence a um objeto.</p>
+<pre><code>const personagem = {
+    nome: "Bruno",
+    vida: 100,
+
+    atacar() {
+        console.log("O personagem atacou!");
+    }
+};
+
+personagem.atacar();</code></pre>
+    <div class="out">O personagem atacou!</div>
+    <p>Pense assim:</p>
+<pre><code>Objeto
+ ├── propriedades
+ └── métodos</code></pre>
+    <p>Exemplo:</p>
+<pre><code>const personagem = {
+    nome: "Bruno",
+    vida: 100,
+
+    atacar() {
+        console.log("Ataque!");
+    }
+};</code></pre>
+    <ul>
+      <li><code>nome</code> e <code>vida</code> são <strong>propriedades</strong>.</li>
+      <li><code>atacar()</code> é um <strong>método</strong>.</li>
+    </ul>
+  </section>
+
+  <!-- ============ 30 ============ -->
+  <section class="sec" id="s30">
+    <h2><span class="num">30</span> this</h2>
+    <p><code>this</code> permite que um método faça referência ao <strong>próprio objeto</strong>.</p>
+<pre><code>const personagem = {
+    nome: "Bruno",
+    vida: 100,
+
+    mostrarNome() {
+        console.log(this.nome);
+    }
+};
+
+personagem.mostrarNome();</code></pre>
+    <div class="out">Bruno</div>
+    <p>Neste caso, <code>this.nome</code> significa: <em>"O nome deste objeto."</em></p>
+    <p>Outro exemplo:</p>
+<pre><code>const personagem = {
+    nome: "Bruno",
+    vida: 100,
+
+    receberDano(dano) {
+        this.vida = this.vida - dano;
+    }
+};
+
+personagem.receberDano(20);
+
+console.log(personagem.vida);</code></pre>
+    <div class="out">80</div>
+    <p>O método modificou a própria vida do personagem.</p>
+  </section>
+
+  <!-- ============ 31 ============ -->
+  <section class="sec" id="s31">
+    <h2><span class="num">31</span> Destructuring</h2>
+    <p>Destructuring permite <strong>extrair valores</strong> de objetos ou arrays de maneira mais prática.</p>
+    <h3>Objeto</h3>
+<pre><code>const personagem = {
+    nome: "Bruno",
+    classe: "Guerreiro",
+    nivel: 10
+};</code></pre>
+    <p>Sem destructuring:</p>
+<pre><code>const nome = personagem.nome;
+const classe = personagem.classe;
+const nivel = personagem.nivel;</code></pre>
+    <p>Com destructuring:</p>
+<pre><code>const { nome, classe, nivel } = personagem;</code></pre>
+    <p>Agora podemos usar:</p>
+<pre><code>console.log(nome);
+console.log(classe);
+console.log(nivel);</code></pre>
+    <p>Pense assim: <code>const { nome, classe } = personagem;</code> significa <em>"Pegue nome e classe de dentro desse objeto."</em></p>
+  </section>
+
+  <!-- ============ 32 ============ -->
+  <section class="sec" id="s32">
+    <h2><span class="num">32</span> Destructuring de arrays</h2>
+    <p>Também podemos fazer isso com arrays.</p>
+<pre><code>const personagens = ["Guerreiro", "Mago", "Arqueiro"];
+
+const [primeiro, segundo, terceiro] = personagens;
+
+console.log(primeiro);
+console.log(segundo);
+console.log(terceiro);</code></pre>
+    <div class="out">Guerreiro
+Mago
+Arqueiro</div>
+    <div class="note"><strong>Atenção:</strong> nos arrays a <strong>ordem importa</strong>.</div>
+  </section>
+
+  <!-- ============ 33 ============ -->
+  <section class="sec" id="s33">
+    <h2><span class="num">33</span> Spread ...</h2>
+    <p>O operador <strong>spread</strong> (<code>...</code>) permite <strong>espalhar</strong> os elementos de uma estrutura.</p>
+<pre><code>const personagem = {
+    nome: "Bruno",
+    nivel: 10
+};
+
+const personagemAtualizado = {
+    ...personagem,
+    vida: 100
+};</code></pre>
+    <p>Agora:</p>
+<pre><code>console.log(personagemAtualizado);</code></pre>
+    <div class="out">{
+    nome: "Bruno",
+    nivel: 10,
+    vida: 100
+}</div>
+    <p>O <code>...personagem</code> espalhou as propriedades do objeto dentro do novo objeto.</p>
+    <h3>Com arrays</h3>
+<pre><code>const guerreiros = ["Bruno", "Carlos"];
+const magos = ["Ana", "Julia"];
+
+const personagens = [...guerreiros, ...magos];
+
+console.log(personagens);</code></pre>
+    <div class="out">["Bruno", "Carlos", "Ana", "Julia"]</div>
+    <p>Pense: <code>...</code> = <em>"espalhe o conteúdo aqui."</em></p>
+  </section>
+
+  <!-- ============ 34 ============ -->
+  <section class="sec" id="s34">
+    <h2><span class="num">34</span> Rest ...</h2>
+    <p>O mesmo <code>...</code> também pode ser usado para <strong>reunir vários valores</strong>.</p>
+<pre><code>function somar(...numeros) {
+    console.log(numeros);
+}
+
+somar(10, 20, 30, 40);</code></pre>
+    <p>O parâmetro <code>...numeros</code> reúne os valores em um array.</p>
+    <div class="out">[10, 20, 30, 40]</div>
+    <h3>Spread x Rest</h3>
+    <p>Apesar de usarem o mesmo <code>...</code>, a função é diferente.</p>
+    <p><strong>Spread</strong> — espalha valores:</p>
+<pre><code>const personagens = [...guerreiros];</code></pre>
+    <p><strong>Rest</strong> — reúne valores:</p>
+<pre><code>function exemplo(...valores) {
+}</code></pre>
+    <div class="note">
+      <strong>Forma simples de lembrar:</strong><br>
+      Spread → espalha<br>
+      Rest → reúne
+    </div>
+  </section>
+
+  <!-- ============ 35 ============ -->
+  <section class="sec" id="s35">
+    <h2><span class="num">35</span> Classes</h2>
+    <p>Classes são uma forma de criar <strong>estruturas para representar objetos semelhantes</strong>.</p>
+    <p>Por exemplo, vários personagens podem possuir: <code>nome</code>, <code>vida</code>, <code>ataque</code>, <code>defesa</code> e um método para atacar.</p>
+<pre><code>class Personagem {
+    constructor(nome, vida, ataque, defesa) {
+        this.nome = nome;
+        this.vida = vida;
+        this.ataque = ataque;
+        this.defesa = defesa;
+    }
+
+    atacar() {
+        console.log(`${this.nome} atacou!`);
+    }
+}</code></pre>
+    <p>Agora podemos criar personagens:</p>
+<pre><code>const jogador = new Personagem("Bruno", 100, 10, 5);
+const inimigo = new Personagem("Slime", 50, 8, 3);</code></pre>
+    <p>Cada objeto possui seus próprios valores.</p>
+<pre><code>console.log(jogador.nome);
+console.log(inimigo.nome);</code></pre>
+    <div class="out">Bruno
+Slime</div>
+    <h3>constructor</h3>
+    <p>O <code>constructor</code> é executado quando usamos <code>new</code>.</p>
+<pre><code>const jogador = new Personagem("Bruno", 100, 10, 5);</code></pre>
+    <p>Os valores são enviados para:</p>
+<pre><code>constructor(nome, vida, ataque, defesa)</code></pre>
+    <p>E então:</p>
+<pre><code>this.nome = nome;
+this.vida = vida;
+this.ataque = ataque;
+this.defesa = defesa;</code></pre>
+    <h3>new</h3>
+    <p><code>new</code> cria um novo objeto baseado na classe.</p>
+<pre><code>const jogador = new Personagem(...);</code></pre>
+    <p>Pense:</p>
+    <ul>
+      <li><strong>Classe</strong> = molde</li>
+      <li><strong>Objeto</strong> = algo criado a partir desse molde</li>
+    </ul>
+  </section>
+
+  <!-- ============ 36 ============ -->
+  <section class="sec" id="s36">
+    <h2><span class="num">36</span> Métodos dentro de classes</h2>
+    <p>Podemos colocar comportamentos dentro da classe.</p>
+<pre><code>class Personagem {
+    constructor(nome, vida) {
+        this.nome = nome;
+        this.vida = vida;
+    }
+
+    receberDano(dano) {
+        this.vida -= dano;
+    }
+}</code></pre>
+    <p>Criando o personagem:</p>
+<pre><code>const jogador = new Personagem("Bruno", 100);</code></pre>
+    <p>Aplicando dano:</p>
+<pre><code>jogador.receberDano(30);
+
+console.log(jogador.vida);</code></pre>
+    <div class="out">70</div>
+    <p>Isso começa a deixar nosso sistema de RPG muito mais organizado.</p>
+  </section>
+
+  <!-- ============ 37 ============ -->
+  <section class="sec" id="s37">
+    <h2><span class="num">37</span> Módulos</h2>
+    <p>Quando um projeto cresce, não é interessante colocar todo o código em um único arquivo. Podemos dividir o projeto:</p>
+<pre><code>jogo/
+│
+├── personagem.js
+├── combate.js
+├── inimigos.js
+└── main.js</code></pre>
+    <p>Cada arquivo pode possuir uma responsabilidade.</p>
+    <h3>export</h3>
+    <p>Permite <strong>disponibilizar</strong> algo de um arquivo.</p>
+<pre><code>export function calcularDano(ataque, defesa) {
+    const dano = ataque - defesa;
+
+    if (dano &lt; 0) {
+        return 0;
+    }
+
+    return dano;
+}</code></pre>
+    <h3>import</h3>
+    <p>Permite <strong>utilizar</strong> algo de outro arquivo.</p>
+<pre><code>import { calcularDano } from "./combate.js";</code></pre>
+    <p>Agora podemos utilizar:</p>
+<pre><code>const dano = calcularDano(10, 3);
+
+console.log(dano);</code></pre>
+    <div class="note">
+      Pense:<br>
+      <code>export</code> → disponibiliza<br>
+      <code>import</code> → traz para este arquivo
+    </div>
+  </section>
+
+  <!-- ============ 38 ============ -->
+  <section class="sec" id="s38">
+    <h2><span class="num">38</span> DOM</h2>
+    <p><strong>DOM</strong> significa <em>Document Object Model</em>.</p>
+    <p>Quando temos uma página HTML, o navegador transforma o HTML em uma estrutura que o JavaScript consegue acessar e modificar.</p>
+    <p>HTML:</p>
+<pre><code>&lt;h1 id="titulo"&gt;Meu RPG&lt;/h1&gt;</code></pre>
+    <p>JavaScript:</p>
+<pre><code>const titulo = document.getElementById("titulo");
+
+console.log(titulo);</code></pre>
+    <p>Podemos alterar o texto:</p>
+<pre><code>titulo.textContent = "Meu RPG de JavaScript";</code></pre>
+    <p>Agora o título da página muda.</p>
+    <p>Pense assim:</p>
+<pre><code>HTML
+ ↓
+DOM
+ ↓
+JavaScript consegue acessar/modificar</code></pre>
+    <p>O DOM é o que vai permitir transformar nosso jogo que roda no console em um jogo que possui uma interface na página.</p>
+  </section>
+
+  <!-- ============ 39 ============ -->
+  <section class="sec" id="s39">
+    <h2><span class="num">39</span> Selecionando elementos</h2>
+    <p>Podemos usar:</p>
+<pre><code>document.getElementById("titulo");</code></pre>
+    <p>Para buscar um elemento pelo <strong>id</strong>.</p>
+    <p>Também podemos usar:</p>
+<pre><code>document.querySelector("#titulo");</code></pre>
+    <p>E:</p>
+<pre><code>document.querySelector(".personagem");</code></pre>
+    <p><code>querySelector()</code> permite buscar elementos usando <strong>seletores semelhantes aos do CSS</strong>.</p>
+  </section>
+
+  <!-- ============ 40 ============ -->
+  <section class="sec" id="s40">
+    <h2><span class="num">40</span> Eventos</h2>
+    <p>Eventos são <strong>acontecimentos na página</strong>. Por exemplo:</p>
+    <ul>
+      <li>clique</li>
+      <li>teclado</li>
+      <li>mouse</li>
+      <li>formulário</li>
+      <li>etc.</li>
+    </ul>
+    <p>Podemos detectar um clique:</p>
+    <p>HTML:</p>
+<pre><code>&lt;button id="botao"&gt;Atacar&lt;/button&gt;</code></pre>
+    <p>JavaScript:</p>
+<pre><code>const botao = document.getElementById("botao");
+
+botao.addEventListener("click", () =&gt; {
+    console.log("O jogador atacou!");
+});</code></pre>
+    <p>Agora, sempre que o jogador clicar no botão, o código será executado.</p>
+    <div class="note">
+      Pense assim:<br>
+      <strong>Evento:</strong> "Algo aconteceu."<br>
+      <strong>addEventListener:</strong> "Quando isso acontecer, faça alguma coisa."
+    </div>
+  </section>
+
+  <!-- ============ 41 ============ -->
+  <section class="sec" id="s41">
+    <h2><span class="num">41</span> Evento aplicado ao nosso RPG</h2>
+    <p>Podemos começar a transformar nosso combate em uma interface.</p>
+    <p>HTML:</p>
+<pre><code>&lt;button id="botaoAtacar"&gt;Atacar&lt;/button&gt;
+&lt;p id="vidaCriatura"&gt;Vida: 100&lt;/p&gt;</code></pre>
+    <p>JavaScript:</p>
+<pre><code>const botaoAtacar = document.getElementById("botaoAtacar");
+const vidaCriatura = document.getElementById("vidaCriatura");
+
+let vida = 100;
+
+botaoAtacar.addEventListener("click", () =&gt; {
+    vida -= 10;
+
+    vidaCriatura.textContent = `Vida: ${vida}`;
+});</code></pre>
+    <p>Cada clique no botão reduz a vida da criatura. Isso já é o começo de transformar o nosso sistema de combate em um jogo de verdade no navegador.</p>
+  </section>
+
+  <!-- ============ 42 ============ -->
+  <section class="sec" id="s42">
+    <h2><span class="num">42</span> Manipulação avançada do DOM</h2>
+    <p>Já vimos como encontrar elementos:</p>
+<pre><code>const titulo = document.getElementById("titulo");</code></pre>
+    <p>Agora podemos modificar várias características desses elementos.</p>
+    <h3>Alterando texto</h3>
+<pre><code>titulo.textContent = "RPG JavaScript";</code></pre>
+    <h3>Alterando HTML</h3>
+<pre><code>titulo.innerHTML = "&lt;strong&gt;RPG JavaScript&lt;/strong&gt;";</code></pre>
+    <div class="note">
+      <code>textContent</code> trata o conteúdo como <strong>texto puro</strong>.<br>
+      <code>innerHTML</code> permite <strong>inserir HTML</strong> — use com cuidado, pois pode abrir brechas de segurança se o conteúdo vier do usuário.
+    </div>
+  </section>
+
+  <!-- ============ 43 ============ -->
+  <section class="sec" id="s43">
+    <h2><span class="num">43</span> Alterando atributos</h2>
+    <p>HTML:</p>
+<pre><code>&lt;img id="imagemPersonagem" src="heroi.png"&gt;</code></pre>
+    <p>JavaScript:</p>
+<pre><code>const imagem = document.getElementById("imagemPersonagem");
+
+imagem.src = "slime.png";</code></pre>
+    <p>Podemos alterar atributos usando:</p>
+<pre><code>elemento.setAttribute("atributo", "valor");</code></pre>
+    <p>Exemplo:</p>
+<pre><code>imagem.setAttribute("src", "slime.png");</code></pre>
+    <p>Também podemos ler um atributo:</p>
+<pre><code>console.log(imagem.getAttribute("src"));</code></pre>
+  </section>
+
+  <!-- ============ 44 ============ -->
+  <section class="sec" id="s44">
+    <h2><span class="num">44</span> Classes CSS pelo JavaScript</h2>
+    <p>Podemos adicionar ou remover classes CSS.</p>
+    <p>HTML:</p>
+<pre><code>&lt;p id="mensagem"&gt;O personagem está vivo!&lt;/p&gt;</code></pre>
+    <p>JavaScript:</p>
+<pre><code>const mensagem = document.getElementById("mensagem");
+
+mensagem.classList.add("alerta");</code></pre>
+    <p>Remover:</p>
+<pre><code>mensagem.classList.remove("alerta");</code></pre>
+    <p>Alternar:</p>
+<pre><code>mensagem.classList.toggle("alerta");</code></pre>
+    <p>O <code>toggle</code> funciona como um interruptor:</p>
+    <ul>
+      <li>não possui a classe → adiciona</li>
+      <li>possui a classe → remove</li>
+    </ul>
+    <p>Isso será muito útil para mudar visualmente o estado do jogo.</p>
+  </section>
+
+  <!-- ============ 45 ============ -->
+  <section class="sec" id="s45">
+    <h2><span class="num">45</span> Criando elementos dinamicamente</h2>
+    <p>Podemos criar elementos HTML usando JavaScript.</p>
+<pre><code>const novoParagrafo = document.createElement("p");
+
+novoParagrafo.textContent = "O Slime apareceu!";</code></pre>
+    <p>Mas ainda precisamos colocar esse elemento na página. Podemos usar:</p>
+<pre><code>document.body.appendChild(novoParagrafo);</code></pre>
+    <p>Agora o parágrafo foi adicionado ao HTML.</p>
+    <h3>Exemplo no RPG</h3>
+<pre><code>const mensagem = document.createElement("p");
+
+mensagem.textContent = "Um Slime apareceu!";
+
+document.body.appendChild(mensagem);</code></pre>
+    <p>Isso permite criar elementos conforme o jogo acontece.</p>
+  </section>
+
+  <!-- ============ 46 ============ -->
+  <section class="sec" id="s46">
+    <h2><span class="num">46</span> Removendo elementos</h2>
+    <p>Podemos remover um elemento:</p>
+<pre><code>mensagem.remove();</code></pre>
+    <p>Isso é útil, por exemplo, para remover uma mensagem antiga ou retirar um inimigo da interface.</p>
+  </section>
+
+  <!-- ============ 47 ============ -->
+  <section class="sec" id="s47">
+    <h2><span class="num">47</span> Eventos de teclado</h2>
+    <p>Também podemos detectar teclas pressionadas.</p>
+<pre><code>document.addEventListener("keydown", (evento) =&gt; {
+    console.log(evento.key);
+});</code></pre>
+    <p>Se o jogador apertar <code>A</code>, o console poderá mostrar:</p>
+    <div class="out">a</div>
+    <p>Podemos verificar uma tecla específica:</p>
+<pre><code>document.addEventListener("keydown", (evento) =&gt; {
+    if (evento.key === "Enter") {
+        console.log("Enter pressionado!");
+    }
+});</code></pre>
+    <h3>Exemplo em jogo</h3>
+<pre><code>document.addEventListener("keydown", (evento) =&gt; {
+    if (evento.key === "a") {
+        console.log("O personagem atacou!");
+    }
+});</code></pre>
+    <p>Agora podemos começar a criar controles por teclado.</p>
+  </section>
+
+  <!-- ============ 48 ============ -->
+  <section class="sec" id="s48">
+    <h2><span class="num">48</span> Formulários</h2>
+    <p>Podemos capturar informações digitadas pelo jogador.</p>
+    <p>HTML:</p>
+<pre><code>&lt;input id="nomeJogador" type="text"&gt;
+&lt;button id="confirmar"&gt;Confirmar&lt;/button&gt;</code></pre>
+    <p>JavaScript:</p>
+<pre><code>const nomeJogador = document.getElementById("nomeJogador");
+const confirmar = document.getElementById("confirmar");
+
+confirmar.addEventListener("click", () =&gt; {
+    console.log(nomeJogador.value);
+});</code></pre>
+    <p><code>.value</code> pega o conteúdo digitado. Se o jogador escrever <code>Bruno</code>, teremos <code>nomeJogador.value</code> com o valor <code>"Bruno"</code>.</p>
+  </section>
+
+  <!-- ============ 49 ============ -->
+  <section class="sec" id="s49">
+    <h2><span class="num">49</span> localStorage</h2>
+    <p>O <code>localStorage</code> permite <strong>guardar informações no navegador</strong>.</p>
+<pre><code>localStorage.setItem("nomeJogador", "Bruno");</code></pre>
+    <p>Agora podemos recuperar:</p>
+<pre><code>const nome = localStorage.getItem("nomeJogador");
+
+console.log(nome);</code></pre>
+    <div class="out">Bruno</div>
+    <h3>Removendo</h3>
+<pre><code>localStorage.removeItem("nomeJogador");</code></pre>
+    <h3>Limpando tudo</h3>
+<pre><code>localStorage.clear();</code></pre>
+    <div class="note">
+      Pense assim:<br>
+      <code>setItem</code> → guardar<br>
+      <code>getItem</code> → pegar<br>
+      <code>removeItem</code> → remover<br>
+      <code>clear</code> → limpar tudo
+    </div>
+  </section>
+
+  <!-- ============ 50 ============ -->
+  <section class="sec" id="s50">
+    <h2><span class="num">50</span> Guardando dados do RPG</h2>
+    <p>Podemos guardar informações do personagem.</p>
+<pre><code>localStorage.setItem("nivel", "10");
+localStorage.setItem("experiencia", "250");</code></pre>
+    <p>Depois:</p>
+<pre><code>const nivel = localStorage.getItem("nivel");
+const experiencia = localStorage.getItem("experiencia");
+
+console.log(nivel);
+console.log(experiencia);</code></pre>
+    <p>Isso permite criar sistemas de:</p>
+    <ul>
+      <li>salvar progresso</li>
+      <li>carregar personagem</li>
+      <li>guardar configurações</li>
+      <li>guardar pontuação</li>
+      <li>guardar preferências</li>
+    </ul>
+  </section>
+
+  <!-- ============ 51 ============ -->
+  <section class="sec" id="s51">
+    <h2><span class="num">51</span> JSON</h2>
+    <p>Existe um problema: o <code>localStorage</code> trabalha principalmente com <strong>strings</strong>.</p>
+    <p>Então não podemos simplesmente fazer:</p>
+<pre><code>const personagem = {
+    nome: "Bruno",
+    vida: 100,
+    nivel: 10
+};
+
+localStorage.setItem("personagem", personagem);</code></pre>
+    <p>Precisamos transformar o objeto em <strong>JSON</strong>.</p>
+  </section>
+
+  <!-- ============ 52 ============ -->
+  <section class="sec" id="s52">
+    <h2><span class="num">52</span> JSON.stringify()</h2>
+    <p><code>JSON.stringify()</code> transforma um valor JavaScript em uma <strong>string JSON</strong>.</p>
+<pre><code>const personagem = {
+    nome: "Bruno",
+    vida: 100,
+    nivel: 10
+};
+
+const personagemJSON = JSON.stringify(personagem);
+
+console.log(personagemJSON);</code></pre>
+    <div class="out">{"nome":"Bruno","vida":100,"nivel":10}</div>
+    <p>Agora podemos guardar:</p>
+<pre><code>localStorage.setItem("personagem", personagemJSON);</code></pre>
+  </section>
+
+  <!-- ============ 53 ============ -->
+  <section class="sec" id="s53">
+    <h2><span class="num">53</span> JSON.parse()</h2>
+    <p>Quando recuperamos os dados:</p>
+<pre><code>const dados = localStorage.getItem("personagem");</code></pre>
+    <p>eles voltam como <strong>string</strong>. Podemos transformar novamente em objeto:</p>
+<pre><code>const personagem = JSON.parse(dados);</code></pre>
+    <p>Agora podemos fazer:</p>
+<pre><code>console.log(personagem.nome);
+console.log(personagem.vida);
+console.log(personagem.nivel);</code></pre>
+    <div class="note">
+      <strong>Resumo do fluxo:</strong><br>
+      Objeto → <code>JSON.stringify()</code> → String JSON → <code>localStorage</code> → <code>JSON.parse()</code> → Objeto novamente
+    </div>
+  </section>
+
+  <!-- ============ 54 ============ -->
+  <section class="sec" id="s54">
+    <h2><span class="num">54</span> Salvando um personagem completo</h2>
+<pre><code>const personagem = {
+    nome: "Bruno",
+    classe: "Guerreiro",
+    nivel: 10,
+    vida: 100,
+    experiencia: 250
+};
+
+localStorage.setItem(
+    "personagem",
+    JSON.stringify(personagem)
+);</code></pre>
+    <p>Para carregar:</p>
+<pre><code>const dados = localStorage.getItem("personagem");
+
+const personagemSalvo = JSON.parse(dados);
+
+console.log(personagemSalvo);</code></pre>
+    <p>Isso já é praticamente um <strong>sistema de save</strong>.</p>
+  </section>
+
+  <!-- ============ 55 ============ -->
+  <section class="sec" id="s55">
+    <h2><span class="num">55</span> Promise</h2>
+    <p>Uma <code>Promise</code> representa uma operação que pode terminar no futuro. Ela pode estar:</p>
+    <ul>
+      <li><strong>pendente</strong> (pending);</li>
+      <li><strong>resolvida</strong> (fulfilled);</li>
+      <li><strong>rejeitada</strong> (rejected).</li>
+    </ul>
+<pre><code>const promessa = new Promise((resolve, reject) =&gt; {
+
+    let sucesso = true;
+
+    if (sucesso) {
+        resolve("Operação realizada!");
+    } else {
+        reject("A operação falhou!");
+    }
+
+});</code></pre>
+    <p>Podemos pensar em uma <code>Promise</code> como: <em>"Estou tentando fazer alguma coisa. Quando terminar, aviso se deu certo ou errado."</em></p>
+  </section>
+
+  <!-- ============ 56 ============ -->
+  <section class="sec" id="s56">
+    <h2><span class="num">56</span> .then()</h2>
+    <p>O <code>.then()</code> define o que deve acontecer quando uma Promise for <strong>resolvida com sucesso</strong>.</p>
+<pre><code>promessa.then((resultado) =&gt; {
+    console.log(resultado);
+});</code></pre>
+    <p>Podemos pensar: <code>.then()</code> → <em>"Quando der certo, faça isso."</em></p>
+  </section>
+
+  <!-- ============ 57 ============ -->
+  <section class="sec" id="s57">
+    <h2><span class="num">57</span> .catch() em Promises</h2>
+    <p>O <code>.catch()</code> trata uma Promise que foi <strong>rejeitada</strong>.</p>
+<pre><code>promessa
+    .then((resultado) =&gt; {
+        console.log(resultado);
+    })
+    .catch((erro) =&gt; {
+        console.log(erro);
+    });</code></pre>
+    <p>Podemos pensar:</p>
+    <ul>
+      <li><code>.then()</code> → se der certo.</li>
+      <li><code>.catch()</code> → se der errado.</li>
+    </ul>
+  </section>
+
+  <!-- ============ 58 ============ -->
+  <section class="sec" id="s58">
+    <h2><span class="num">58</span> async</h2>
+    <p>A palavra <code>async</code> é usada para declarar uma <strong>função assíncrona</strong>.</p>
+<pre><code>async function iniciarJogo() {
+    console.log("Jogo iniciado!");
+}</code></pre>
+    <p>Uma função <code>async</code> <strong>sempre retorna uma Promise</strong>.</p>
+  </section>
+
+  <!-- ============ 59 ============ -->
+  <section class="sec" id="s59">
+    <h2><span class="num">59</span> await</h2>
+    <p>O <code>await</code> é usado <strong>dentro de uma função async</strong> para esperar uma Promise terminar antes de continuar.</p>
+<pre><code>async function iniciarJogo() {
+
+    const resultado = await promessa;
+
+    console.log(resultado);
+}</code></pre>
+    <p>Podemos pensar: <code>await</code> → <em>"Espere essa operação terminar antes de continuar."</em></p>
+    <p>Normalmente, <code>async</code> e <code>await</code> são usados juntos com <code>try...catch</code>:</p>
+<pre><code>async function carregarJogo() {
+
+    try {
+        const resultado = await promessa;
+
+        console.log(resultado);
+
+    } catch (erro) {
+        console.log(erro);
+    }
+}</code></pre>
+  </section>
+
+  <!-- ============ 60 ============ -->
+  <section class="sec" id="s60">
+    <h2><span class="num">60</span> fetch()</h2>
+    <p><code>fetch()</code> permite fazer <strong>requisições</strong> para buscar informações externas.</p>
+<pre><code>fetch("https://exemplo.com")</code></pre>
+    <p>O resultado é uma <strong>Promise</strong>. Por isso podemos usar:</p>
+<pre><code>fetch("https://exemplo.com")
+    .then((resposta) =&gt; {
+        console.log(resposta);
+    });</code></pre>
+    <p>Ou, usando <code>async/await</code>:</p>
+<pre><code>async function carregarDados() {
+    const resposta = await fetch("https://exemplo.com");
+
+    console.log(resposta);
+}</code></pre>
+  </section>
+
+  <!-- ============ 61 ============ -->
+  <section class="sec" id="s61">
+    <h2><span class="num">61</span> APIs</h2>
+    <p><strong>API</strong> é uma forma de um sistema disponibilizar <strong>dados ou funcionalidades</strong> para outro sistema.</p>
+    <p>Por exemplo, imagine uma API de monstros:</p>
+<pre><code>API
+ ↓
+informações dos monstros
+ ↓
+JavaScript
+ ↓
+nosso jogo</code></pre>
+    <p>Uma resposta poderia conter:</p>
+<pre><code>{
+    "nome": "Slime",
+    "vida": 50,
+    "ataque": 8
+}</code></pre>
+    <p>Nosso jogo poderia utilizar essas informações.</p>
+  </section>
+
+  <!-- ============ 62 ============ -->
+  <section class="sec" id="s62">
+    <h2><span class="num">62</span> Transformando uma resposta em JSON</h2>
+    <p>Quando usamos <code>fetch</code>, normalmente precisamos transformar a resposta em JSON.</p>
+<pre><code>async function carregarMonstro() {
+    const resposta = await fetch("https://exemplo.com/monstro");
+
+    const monstro = await resposta.json();
+
+    console.log(monstro);
+}</code></pre>
+    <p>A sequência é:</p>
+<pre><code>fetch()
+   ↓
+resposta
+   ↓
+resposta.json()
+   ↓
+objeto JavaScript</code></pre>
+  </section>
+
+  <!-- ============ 63 ============ -->
+  <section class="sec" id="s63">
+    <h2><span class="num">63</span> Tratamento de erros com fetch</h2>
+    <p>Como uma requisição pode falhar, podemos utilizar <code>try...catch</code>.</p>
+<pre><code>async function carregarMonstro() {
+    try {
+        const resposta = await fetch("https://exemplo.com/monstro");
+
+        const monstro = await resposta.json();
+
+        console.log(monstro);
+
+    } catch (erro) {
+        console.log("Não foi possível carregar o monstro.");
+    }
+}</code></pre>
+    <div class="note">
+      Pense:<br>
+      <code>try</code> → tente fazer a operação<br>
+      <code>catch</code> → se der erro, trate o erro
+    </div>
+  </section>
+
+  <!-- ============ 64 ============ -->
+  <section class="sec" id="s64">
+    <h2><span class="num">64</span> Programação assíncrona</h2>
+    <p>Algumas operações <strong>não terminam imediatamente</strong>. Exemplos:</p>
+    <ul>
+      <li>buscar dados na internet</li>
+      <li>carregar arquivos</li>
+      <li>esperar respostas de servidores</li>
+      <li>algumas operações do navegador</li>
+    </ul>
+    <p>JavaScript pode continuar executando enquanto essas operações acontecem. Por isso existem:</p>
+    <ul>
+      <li><code>Promise</code></li>
+      <li><code>.then()</code></li>
+      <li><code>.catch()</code></li>
+      <li><code>async</code></li>
+      <li><code>await</code></li>
+    </ul>
+    <p>A forma que geralmente vamos preferir nos nossos projetos será:</p>
+<pre><code>async function exemplo() {
+    try {
+        const resultado = await algumaOperacao();
+
+        console.log(resultado);
+
+    } catch (erro) {
+        console.log(erro);
+    }
+}</code></pre>
+  </section>
+
+  <!-- ============ 65 ============ -->
+  <section class="sec" id="s65">
+    <h2><span class="num">65</span> Orientação a objetos</h2>
+    <p>Já começamos a trabalhar com objetos e classes. <strong>Orientação a objetos</strong> é uma forma de organizar o código pensando em objetos, dados e comportamentos.</p>
+<pre><code>Personagem
+ ├── nome
+ ├── vida
+ ├── ataque
+ ├── defesa
+ ├── atacar()
+ └── receberDano()</code></pre>
+<pre><code>Criatura
+ ├── nome
+ ├── vida
+ ├── ataque
+ ├── defesa
+ ├── atacar()
+ └── receberDano()</code></pre>
+    <p>Classes podem ajudar a representar essas entidades.</p>
+  </section>
+
+  <!-- ============ 66 ============ -->
+  <section class="sec" id="s66">
+    <h2><span class="num">66</span> Herança</h2>
+    <p>Uma classe pode <strong>herdar características</strong> de outra.</p>
+<pre><code>class Personagem {
+    constructor(nome, vida) {
+        this.nome = nome;
+        this.vida = vida;
+    }
+
+    receberDano(dano) {
+        this.vida -= dano;
+    }
+}</code></pre>
+    <p>Podemos criar uma classe derivada:</p>
+<pre><code>class Guerreiro extends Personagem {
+    constructor(nome, vida, espada) {
+        super(nome, vida);
+
+        this.espada = espada;
+    }
+}</code></pre>
+    <p>Criando:</p>
+<pre><code>const guerreiro = new Guerreiro(
+    "Bruno",
+    100,
+    "Espada de Ferro"
+);</code></pre>
+    <p>O guerreiro possui as características herdadas de <code>Personagem</code>.</p>
+    <h3>extends</h3>
+<pre><code>class Guerreiro extends Personagem</code></pre>
+    <p>Significa: <strong>Guerreiro herda de Personagem</strong>.</p>
+    <h3>super()</h3>
+<pre><code>super(nome, vida);</code></pre>
+    <p>Chama o <code>constructor</code> da classe pai.</p>
+  </section>
+
+  <!-- ============ 67 ============ -->
+  <section class="sec" id="s67">
+    <h2><span class="num">67</span> Composição</h2>
+    <p>Nem sempre precisamos usar herança. Também podemos <strong>montar objetos combinando diferentes partes</strong>.</p>
+    <p>Imagine:</p>
+<pre><code>const arma = {
+    nome: "Espada",
+    dano: 15
+};</code></pre>
+    <p>E:</p>
+<pre><code>const personagem = {
+    nome: "Bruno",
+    vida: 100,
+    arma: arma
+};</code></pre>
+    <p>Agora o personagem <strong>possui uma arma</strong>. Podemos acessar:</p>
+<pre><code>console.log(personagem.arma.nome);
+console.log(personagem.arma.dano);</code></pre>
+    <div class="out">Espada
+15</div>
+    <p>Isso é uma forma de composição: <em>um objeto é formado por outros objetos.</em></p>
+  </section>
+
+  <!-- ============ RESUMO ============ -->
+  <section class="sec" id="resumo">
+    <h2><span class="num">★</span> Resumo Geral</h2>
+    <p>Tudo o que foi visto no guia, organizado por categoria.</p>
+
+    <div class="sum-grid">
+
+      <div class="sum-card">
+        <h3>📦 Variáveis</h3>
+        <ul>
+          <li><b>const</b> → não será reatribuída.</li>
+          <li><b>let</b> → poderá ter seu valor alterado.</li>
+        </ul>
+      </div>
+
+      <div class="sum-card">
+        <h3>🔤 Tipos de valores</h3>
+        <ul>
+          <li><b>string</b> → texto.</li>
+          <li><b>number</b> → inteiros ou decimais.</li>
+          <li><b>boolean</b> → true ou false.</li>
+          <li><b>null</b> → ausência intencional de valor.</li>
+          <li><b>undefined</b> → valor não definido.</li>
+          <li><b>NaN</b> → resultado que não representa um número válido.</li>
+          <li><b>typeof</b> → revela o tipo (cuidado: <code>typeof null</code> é <code>"object"</code>).</li>
+        </ul>
+      </div>
+
+      <div class="sum-card">
+        <h3>🔄 Conversão de tipos</h3>
+        <ul>
+          <li><b>Number(valor)</b> → string para número.</li>
+          <li><b>String(valor)</b> → número para string.</li>
+          <li><b>"10" + 5</b> → "105" (concatena).</li>
+          <li><b>"10" - 5</b> → 5 (converte para número).</li>
+          <li><b>"Bruno" - 5</b> → NaN.</li>
+        </ul>
+      </div>
+
+      <div class="sum-card">
+        <h3>➕ Operadores matemáticos</h3>
+        <ul>
+          <li><b>+</b> → soma.</li>
+          <li><b>-</b> → subtração.</li>
+          <li><b>*</b> → multiplicação.</li>
+          <li><b>/</b> → divisão.</li>
+          <li><b>%</b> → resto da divisão.</li>
+        </ul>
+      </div>
+
+      <div class="sum-card">
+        <h3>⚖️ Comparações</h3>
+        <ul>
+          <li><b>&gt;</b> → maior que.</li>
+          <li><b>&lt;</b> → menor que.</li>
+          <li><b>&gt;=</b> → maior ou igual.</li>
+          <li><b>&lt;=</b> → menor ou igual.</li>
+          <li><b>==</b> → igual, com conversão de tipo.</li>
+          <li><b>===</b> → estritamente igual (valor + tipo).</li>
+          <li><b>!=</b> → diferente, com conversão de tipo.</li>
+          <li><b>!==</b> → estritamente diferente.</li>
+        </ul>
+      </div>
+
+      <div class="sum-card">
+        <h3>🔀 Estruturas de decisão</h3>
+        <ul>
+          <li><b>if</b> → verifica uma condição.</li>
+          <li><b>else if</b> → verifica outra condição caso a anterior seja falsa.</li>
+          <li><b>else</b> → executa quando as condições anteriores forem falsas.</li>
+          <li><b>switch...case</b> → verifica várias possibilidades para um mesmo valor.</li>
+          <li><b>break</b> → encerra um <code>case</code>.</li>
+          <li><b>default</b> → executado quando nenhum <code>case</code> corresponde.</li>
+        </ul>
+      </div>
+
+      <div class="sum-card">
+        <h3>🔁 Repetições</h3>
+        <ul>
+          <li><b>while</b> → repete enquanto a condição for verdadeira (verifica antes).</li>
+          <li><b>do...while</b> → executa primeiro e verifica a condição depois.</li>
+          <li><b>for</b> → repetição com inicialização, condição e atualização.</li>
+          <li><b>for...of</b> → percorre valores.</li>
+          <li><b>for...in</b> → percorre propriedades/chaves.</li>
+        </ul>
+      </div>
+
+      <div class="sum-card">
+        <h3>⏯️ Controle das repetições</h3>
+        <ul>
+          <li><b>break</b> → interrompe o laço completamente.</li>
+          <li><b>continue</b> → pula apenas a repetição atual.</li>
+        </ul>
+      </div>
+
+      <div class="sum-card">
+        <h3>📚 Arrays</h3>
+        <ul>
+          <li><b>push()</b> → adiciona no final.</li>
+          <li><b>pop()</b> → remove do final.</li>
+          <li><b>shift()</b> → remove do início.</li>
+          <li><b>unshift()</b> → adiciona no início.</li>
+          <li><b>forEach()</b> → executa algo para cada elemento.</li>
+          <li><b>map()</b> → cria um novo array transformando os elementos.</li>
+          <li><b>filter()</b> → cria um novo array filtrando os elementos.</li>
+          <li><b>find()</b> → encontra o primeiro elemento que atende à condição.</li>
+        </ul>
+      </div>
+
+      <div class="sum-card">
+        <h3>⚙️ Funções</h3>
+        <ul>
+          <li><b>function</b> → declara uma função.</li>
+          <li><b>parâmetros</b> → valores que a função recebe.</li>
+          <li><b>return</b> → devolve um valor para quem chamou a função.</li>
+        </ul>
+      </div>
+
+      <div class="sum-card">
+        <h3>🧭 Escopo</h3>
+        <ul>
+          <li>Variáveis criadas dentro de funções pertencem àquele escopo.</li>
+          <li><b>let</b> e <b>const</b> respeitam blocos <code>{ }</code>.</li>
+          <li>Escopos internos acessam escopos externos — o contrário não acontece.</li>
+        </ul>
+      </div>
+
+      <div class="sum-card">
+        <h3>🧱 Objetos</h3>
+        <ul>
+          <li><b>objeto</b> → agrupa informações relacionadas.</li>
+          <li><b>propriedades</b> → dados dentro do objeto.</li>
+          <li><b>métodos</b> → funções que pertencem ao objeto.</li>
+          <li><b>this</b> → referência ao próprio objeto.</li>
+          <li><b>const</b> não impede alterar propriedades do objeto.</li>
+        </ul>
+      </div>
+
+      <div class="sum-card">
+        <h3>📦 Destructuring</h3>
+        <ul>
+          <li><b>const { nome } = obj;</b> → extrai valores de objetos.</li>
+          <li><b>const [primeiro] = array;</b> → extrai valores de arrays (a ordem importa).</li>
+        </ul>
+      </div>
+
+      <div class="sum-card">
+        <h3>🌀 Spread / Rest</h3>
+        <ul>
+          <li><b>...</b> (spread) → espalha valores.</li>
+          <li><b>...</b> (rest) → reúne valores em um array.</li>
+        </ul>
+      </div>
+
+      <div class="sum-card">
+        <h3>🏗️ Classes</h3>
+        <ul>
+          <li><b>class</b> → cria um molde para objetos.</li>
+          <li><b>constructor</b> → executado ao usar <code>new</code>.</li>
+          <li><b>new</b> → cria um objeto a partir da classe.</li>
+          <li><b>métodos</b> → comportamentos dentro da classe.</li>
+        </ul>
+      </div>
+
+      <div class="sum-card">
+        <h3>🧩 Orientação a objetos</h3>
+        <ul>
+          <li><b>Herança</b> → uma classe herda características de outra (<code>extends</code> / <code>super()</code>).</li>
+          <li><b>Composição</b> → um objeto é formado por outros objetos.</li>
+          <li><b>Organização</b> → separar responsabilidades em arquivos e módulos.</li>
+        </ul>
+      </div>
+
+      <div class="sum-card">
+        <h3>📦 Módulos</h3>
+        <ul>
+          <li><b>export</b> → disponibiliza algo de um arquivo.</li>
+          <li><b>import</b> → traz algo de outro arquivo.</li>
+        </ul>
+      </div>
+
+      <div class="sum-card">
+        <h3>🌐 DOM</h3>
+        <ul>
+          <li><b>getElementById()</b> → busca elemento pelo id.</li>
+          <li><b>querySelector()</b> → busca elemento por seletor CSS.</li>
+          <li><b>textContent</b> → altera o texto de um elemento.</li>
+          <li><b>innerHTML</b> → altera o HTML interno de um elemento.</li>
+          <li><b>setAttribute()</b> → altera atributos.</li>
+          <li><b>getAttribute()</b> → lê atributos.</li>
+          <li><b>classList.add()</b> → adiciona classe CSS.</li>
+          <li><b>classList.remove()</b> → remove classe CSS.</li>
+          <li><b>classList.toggle()</b> → alterna classe CSS.</li>
+          <li><b>createElement()</b> → cria um novo elemento.</li>
+          <li><b>appendChild()</b> → adiciona elemento na página.</li>
+          <li><b>remove()</b> → remove elemento da página.</li>
+        </ul>
+      </div>
+
+      <div class="sum-card">
+        <h3>🖱️ Eventos</h3>
+        <ul>
+          <li><b>addEventListener()</b> → escuta um evento.</li>
+          <li><b>"click"</b> → evento de clique.</li>
+          <li><b>"keydown"</b> → evento de tecla pressionada.</li>
+          <li><b>evento.key</b> → tecla pressionada.</li>
+          <li><b>.value</b> → valor digitado em um formulário.</li>
+        </ul>
+      </div>
+
+      <div class="sum-card">
+        <h3>💾 Armazenamento</h3>
+        <ul>
+          <li><b>localStorage.setItem()</b> → guarda um valor.</li>
+          <li><b>localStorage.getItem()</b> → recupera um valor.</li>
+          <li><b>localStorage.removeItem()</b> → remove um valor.</li>
+          <li><b>localStorage.clear()</b> → limpa tudo.</li>
+        </ul>
+      </div>
+
+      <div class="sum-card">
+        <h3>🗂️ JSON</h3>
+        <ul>
+          <li><b>JSON.stringify()</b> → transforma objeto em string JSON.</li>
+          <li><b>JSON.parse()</b> → transforma string JSON em objeto.</li>
+        </ul>
+      </div>
+
+      <div class="sum-card">
+        <h3>🚨 Tratamento de erros</h3>
+        <ul>
+          <li><b>try</b> → tenta executar.</li>
+          <li><b>catch</b> → trata o erro.</li>
+          <li><b>erro</b> → objeto com informações sobre a falha.</li>
+        </ul>
+      </div>
+
+      <div class="sum-card">
+        <h3>⏳ Código assíncrono</h3>
+        <ul>
+          <li><b>Promise</b> → representa uma operação que será concluída no futuro.</li>
+          <li><b>.then()</b> → executa quando a Promise é resolvida.</li>
+          <li><b>.catch()</b> → trata uma Promise rejeitada.</li>
+          <li><b>async</b> → declara uma função assíncrona (sempre retorna Promise).</li>
+          <li><b>await</b> → espera uma Promise terminar antes de continuar.</li>
+        </ul>
+      </div>
+
+      <div class="sum-card">
+        <h3>🌍 fetch / APIs</h3>
+        <ul>
+          <li><b>fetch(url)</b> → faz requisições para buscar dados externos.</li>
+          <li><b>resposta.json()</b> → transforma a resposta em objeto JavaScript.</li>
+          <li><b>API</b> → sistema que disponibiliza dados ou funcionalidades.</li>
+          <li><b>try/catch</b> → trata falhas na requisição.</li>
+        </ul>
+      </div>
+
+      <div class="sum-card">
+        <h3>🧠 Mentalidade</h3>
+        <ul>
+          <li><b>Não decorar</b> → entender qual ferramenta usar para cada problema.</li>
+          <li><b>Problema → ferramenta</b> → variável, if, loop, array, objeto, função, classe, evento, DOM, localStorage, fetch, módulos.</li>
+          <li><b>Praticar</b> → usar o RPG como laboratório para fixar cada conceito.</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <footer class="footer">
+    <a href="https://bmfolio.web.app/" target="_blank" rel="noopener noreferrer">© 2026 Bruno Moraes</a>
+  </footer>
+
+</main>
+
+<!-- ===== FAB voltar ao topo ===== -->
+<button class="fab fab-top" id="fabTop" aria-label="Voltar ao topo" title="Voltar ao topo">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M12 19V5"/>
+    <path d="M5 12l7-7 7 7"/>
+  </svg>
+</button>
+
+<!-- ===== FAB regra principal ===== -->
+<button class="fab fab-main" id="fab" aria-label="Abrir regra principal do estudo" title="Regra principal do estudo">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M9 18h6"/>
+    <path d="M10 22h4"/>
+    <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/>
+  </svg>
+</button>
+
+<!-- ===== MODAL ===== -->
+<div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal" id="modal">
+    <button class="modal-close" id="modalClose" aria-label="Fechar">×</button>
+    <h2 id="modalTitle"><span class="modal-num">★</span> Regra principal do estudo</h2>
+    <p><strong>Não tente decorar todos esses conceitos.</strong></p>
+    <p>O objetivo é conseguir olhar para um problema e pensar:</p>
+
+    <div class="mindset">
+      <button type="button" class="mind-item">
+        <span class="q">Preciso guardar um valor?</span>
+        <span class="a">→ variável</span>
+      </button>
+      <button type="button" class="mind-item">
+        <span class="q">Preciso tomar uma decisão?</span>
+        <span class="a">→ if / else</span>
+      </button>
+      <button type="button" class="mind-item">
+        <span class="q">Preciso repetir alguma coisa?</span>
+        <span class="a">→ loop</span>
+      </button>
+      <button type="button" class="mind-item">
+        <span class="q">Preciso guardar vários valores?</span>
+        <span class="a">→ array</span>
+      </button>
+      <button type="button" class="mind-item">
+        <span class="q">Preciso representar uma entidade?</span>
+        <span class="a">→ objeto</span>
+      </button>
+      <button type="button" class="mind-item">
+        <span class="q">Preciso reutilizar código?</span>
+        <span class="a">→ função</span>
+      </button>
+      <button type="button" class="mind-item">
+        <span class="q">Preciso representar vários objetos semelhantes?</span>
+        <span class="a">→ classe</span>
+      </button>
+      <button type="button" class="mind-item">
+        <span class="q">Preciso reagir ao jogador?</span>
+        <span class="a">→ evento</span>
+      </button>
+      <button type="button" class="mind-item">
+        <span class="q">Preciso alterar a página?</span>
+        <span class="a">→ DOM</span>
+      </button>
+      <button type="button" class="mind-item">
+        <span class="q">Preciso guardar o progresso?</span>
+        <span class="a">→ localStorage</span>
+      </button>
+      <button type="button" class="mind-item">
+        <span class="q">Preciso trabalhar com dados externos?</span>
+        <span class="a">→ fetch / API</span>
+      </button>
+      <button type="button" class="mind-item">
+        <span class="q">Preciso dividir meu código?</span>
+        <span class="a">→ módulos</span>
+      </button>
+    </div>
+
+    <p class="modal-hint">Clique em uma pergunta para buscar essa ferramenta no guia.</p>
+
+    <div class="tip note">
+      <strong>Esse é o objetivo real de aprender programação:</strong><br>
+      Não decorar comandos, mas saber <strong>qual ferramenta usar</strong> para resolver cada problema.
+    </div>
+  </div>
+</div>
+
+<script>
+/* ==================== SYNTAX HIGHLIGHTER ==================== */
+const KEYWORDS = new Set([
+  'const','let','var','function','return','if','else','switch','case','default',
+  'break','continue','for','while','do','of','in','new','class','extends','super',
+  'this','try','catch','finally','throw','typeof','instanceof','async','await',
+  'import','export','from','null','undefined','true','false','delete','void',
+  'yield','static','get','set'
+]);
+const BUILTINS = new Set([
+  'console','document','window','localStorage','JSON','Math','Number','String',
+  'Boolean','Promise','Array','Object','Date','fetch','NaN','Infinity'
+]);
+
+function esc(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function highlight(src){
+  const re = /(\/\/[^\n]*)|(`(?:[^`\\]|\\.)*`|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')|\b(\d+(?:\.\d+)?)\b|([A-Za-z_$][A-Za-z0-9_$]*)/g;
+  let out = '', last = 0, m;
+  while ((m = re.exec(src)) !== null) {
+    out += esc(src.slice(last, m.index));
+    if (m[1]) {
+      out += '<span class="c">' + esc(m[1]) + '</span>';
+    } else if (m[2]) {
+      out += '<span class="s">' + esc(m[2]) + '</span>';
+    } else if (m[3]) {
+      out += '<span class="n">' + esc(m[3]) + '</span>';
+    } else if (m[4]) {
+      const w = m[4];
+      const next = src[m.index + w.length];
+      if (KEYWORDS.has(w)) out += '<span class="k">' + w + '</span>';
+      else if (BUILTINS.has(w)) out += '<span class="o">' + w + '</span>';
+      else if (next === '(') out += '<span class="f">' + w + '</span>';
+      else out += w;
+    }
+    last = re.lastIndex;
+  }
+  out += esc(src.slice(last));
+  return out;
+}
+
+document.querySelectorAll('pre > code').forEach(code => {
+  code.innerHTML = highlight(code.textContent);
+});
+
+/* ==================== COPY BUTTONS ==================== */
+document.querySelectorAll('pre').forEach(pre => {
+  const btn = document.createElement('button');
+  btn.className = 'copy';
+  btn.type = 'button';
+  btn.textContent = 'Copiar';
+  btn.addEventListener('click', () => {
+    const codeEl = pre.querySelector('code');
+    const text = codeEl ? codeEl.innerText : pre.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Copiado!';
+      btn.classList.add('done');
+      setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('done'); }, 1400);
+    });
+  });
+  pre.appendChild(btn);
+});
+
+/* ==================== TOC ==================== */
+const toc = document.getElementById('toc');
+const sections = [...document.querySelectorAll('main .sec')];
+
+sections.forEach(sec => {
+  const h2 = sec.querySelector('h2');
+  if (!h2) return;
+  const numEl = h2.querySelector('.num');
+  const num = numEl ? numEl.textContent : '★';
+  const title = h2.textContent.replace(numEl ? numEl.textContent : '', '').trim();
+
+  const a = document.createElement('a');
+  a.className = 'toc-link';
+  a.href = '#' + sec.id;
+  a.innerHTML = '<span class="n">' + num + '</span><span class="t">' + title + '</span>';
+  toc.appendChild(a);
+});
+
+/* ==================== SCROLL SPY ==================== */
+const links = [...document.querySelectorAll('.toc-link')];
+const spy = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + id));
+    }
+  });
+}, { rootMargin: '-70px 0px -75% 0px', threshold: 0 });
+sections.forEach(s => spy.observe(s));
+
+/* ==================== BUSCA ==================== */
+function normalize(str){
+  return String(str)
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function words(normalized){
+  return normalized.split(/[^a-z0-9]+/).filter(Boolean);
+}
+
+function scoreMatch(link, query){
+  const nq = normalize(query);
+  if (!nq) return 0;
+
+  const numEl   = link.querySelector('.n');
+  const titleEl = link.querySelector('.t');
+  const nNum    = normalize(numEl ? numEl.textContent : '');
+  const nTitle  = normalize(titleEl ? titleEl.textContent : '');
+  const href    = link.getAttribute('href');
+  const sec     = href ? document.querySelector(href) : null;
+  const nContent = sec ? normalize(sec.textContent) : '';
+
+  let score = 0;
+
+  if (nNum === nq) score += 200;
+  if (nTitle === nq) score += 150;
+  else if (nTitle.startsWith(nq)) score += 100;
+  else if (nTitle.includes(nq)) score += 60;
+  if (nContent.includes(nq)) score += 10;
+
+  if (score === 0) {
+    const qWords = words(nq).filter(w => w.length >= 2);
+    if (qWords.length === 0) return 0;
+
+    const tWords = words(nTitle);
+    const cWords = words(nContent);
+
+    const everyWordMatches = qWords.every(qw => {
+      const prefix = qw.slice(0, Math.max(3, qw.length - 2));
+      return tWords.some(w => w.startsWith(prefix)) ||
+             cWords.some(w => w.startsWith(prefix));
+    });
+
+    if (everyWordMatches) {
+      score += 5;
+      if (qWords.every(qw => {
+        const prefix = qw.slice(0, Math.max(3, qw.length - 2));
+        return tWords.some(w => w.startsWith(prefix));
+      })) score += 40;
+    }
+  }
+
+  return score;
+}
+
+const search = document.getElementById('search');
+const noResults = document.getElementById('noResults');
+
+function runSearch(){
+  const q = search.value.trim();
+  const empty = q.length === 0;
+  let visible = 0;
+
+  links.forEach(l => {
+    if (empty) {
+      l.classList.remove('hidden');
+      visible++;
+      return;
+    }
+    const s = scoreMatch(l, q);
+    const show = s > 0;
+    l.classList.toggle('hidden', !show);
+    if (show) visible++;
+  });
+
+  noResults.classList.toggle('show', !empty && visible === 0);
+}
+
+search.addEventListener('input', runSearch);
+
+function findBestMatch(query){
+  let best = null, bestScore = 0;
+  links.forEach(l => {
+    const s = scoreMatch(l, query);
+    if (s > bestScore) { bestScore = s; best = l; }
+  });
+  return best;
+}
+
+/* ==================== MOBILE MENU ==================== */
+const menuBtn = document.getElementById('menuBtn');
+const sidebar = document.getElementById('sidebar');
+menuBtn.addEventListener('click', () => sidebar.classList.toggle('open'));
+toc.addEventListener('click', e => {
+  if (e.target.closest('.toc-link') && window.innerWidth <= 1000) {
+    sidebar.classList.remove('open');
+  }
+});
+
+/* ==================== MODAL ==================== */
+const fab = document.getElementById('fab');
+const backdrop = document.getElementById('modalBackdrop');
+const modalClose = document.getElementById('modalClose');
+
+let lastFocused = null;
+
+function openModal(){
+  lastFocused = document.activeElement;
+  backdrop.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => modalClose.focus(), 50);
+}
+
+function closeModal(){
+  backdrop.classList.remove('open');
+  document.body.style.overflow = '';
+  if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+}
+
+fab.addEventListener('click', openModal);
+modalClose.addEventListener('click', closeModal);
+
+backdrop.addEventListener('click', e => {
+  if (e.target === backdrop) closeModal();
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && backdrop.classList.contains('open')) {
+    closeModal();
+  }
+});
+
+/* ==================== MIND-ITEM → BUSCA ==================== */
+document.querySelectorAll('.mind-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const answerEl = item.querySelector('.a');
+    if (!answerEl) return;
+    const answer = answerEl.textContent.replace(/^\s*→\s*/, '').trim();
+
+    search.value = answer;
+    runSearch();
+
+    search.classList.remove('flash');
+    void search.offsetWidth;
+    search.classList.add('flash');
+    setTimeout(() => search.classList.remove('flash'), 900);
+
+    closeModal();
+
+    setTimeout(() => {
+      const best = findBestMatch(answer);
+      if (best) {
+        const target = document.querySelector(best.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        links.forEach(l => l.classList.remove('best'));
+        best.classList.add('best');
+        setTimeout(() => best.classList.remove('best'), 2500);
+      }
+      if (window.getComputedStyle(search).display !== 'none') {
+        search.focus({ preventScroll: true });
+      }
+    }, 260);
+  });
+});
+
+/* ==================== VOLTAR AO TOPO ==================== */
+const fabTop = document.getElementById('fabTop');
+function updateFabTop(){
+  fabTop.classList.toggle('visible', window.scrollY > 400);
+}
+window.addEventListener('scroll', updateFabTop, { passive: true });
+updateFabTop();
+
+fabTop.addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+</script>
+</body>
+</html>
