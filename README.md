@@ -12,7 +12,8 @@
 
 ## 🔗 Acesse o guia
 
-👉 **[brunomoraesf.github.io/contulta-rapida-js](https://brunomoraesf.github.io/contulta-rapida-js/)**
+👉 **[brunomoraesf.github.io/contulta-rapida-js](https://brunomoraesf.github.io/consulta-rapida-js/)**
+
 
 ## ✨ Sobre
 
