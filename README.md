@@ -12,7 +12,7 @@
 
 ## 🔗 Acesse o guia
 
-👉 **[brunomoraesdigital.github.io/contulta-rapida-js](https://brunomoraesdigital.github.io/contulta-rapida-js/)**
+👉 **[brunomoraesf.github.io/contulta-rapida-js](https://brunomoraesf.github.io/contulta-rapida-js/)**
 
 ## ✨ Sobre
 
@@ -48,7 +48,7 @@ Bons estudos! 🚀
 </div>
 
 [![Portfólio](https://img.shields.io/badge/Portfólio-bmfolio.web.app-F77737?logo=google-chrome)](https://bmfolio.web.app/?utm_source=github&utm_medium=repo_contulta-rapida-js) 
-[![GitHub](https://img.shields.io/badge/GitHub-brunomoraesdigital-181717?logo=github)](https://github.com/brunomoraesdigital) 
-![Última atualização](https://img.shields.io/github/last-commit/brunomoraesdigital/contulta-rapida-js) 
+[![GitHub](https://img.shields.io/badge/GitHub-brunomoraesf-181717?logo=github)](https://github.com/brunomoraesf) 
+![Última atualização](https://img.shields.io/github/last-commit/brunomoraesf/contulta-rapida-js) 
 ![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL_3.0-blue.svg) 
-![Visitas](https://visitor-badge.laobi.icu/badge?page_id=brunomoraesdigital.contulta-rapida-js)
+![Visitas](https://visitor-badge.laobi.icu/badge?page_id=brunomoraesf.contulta-rapida-js)
